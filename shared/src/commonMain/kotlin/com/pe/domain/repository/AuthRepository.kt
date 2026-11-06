@@ -1,7 +1,7 @@
 package com.pe.domain.repository
 
-import com.pe.domain.model.LabSession
+import com.pe.domain.model.Usuario
 
 interface AuthRepository {
-    suspend fun login(correo: String, password: String): LabSession
+    suspend fun login(correo: String, password: String): Result<Usuario>
 }

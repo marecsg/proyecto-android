@@ -9,8 +9,9 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Science
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import com.pe.domain.model.LabSession
+import com.pe.domain.model.Usuario
 import com.pe.presentation.viewmodel.AuthViewModel
+import com.pe.presentation.viewmodel.AuthState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -26,7 +27,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun WelcomeContent(
     viewModel: AuthViewModel,
-    onLoginSuccess: (LabSession) -> Unit
+    onLoginSuccess: () -> Unit
 ) {
     val gradientColors = listOf(
         MaterialTheme.colorScheme.primary,
@@ -34,11 +35,15 @@ fun WelcomeContent(
     )
 
     var correo by remember { mutableStateOf("") }
-    val authState by viewModel.uiState.collectAsState()
-    LaunchedEffect(authState.session) {
-        authState.session?.let(onLoginSuccess)
-    }
     var password by remember { mutableStateOf("") }
+
+    val authState by viewModel.state.collectAsState()
+
+    LaunchedEffect(authState) {
+        if (authState is AuthState.Success) {
+            onLoginSuccess()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -102,9 +107,11 @@ fun WelcomeContent(
 
         Spacer(modifier = Modifier.height(32.dp))
 
+        val isLoading = authState is AuthState.Loading
+
         Button(
             onClick = { viewModel.login(correo, password) },
-            enabled = !authState.loading && correo.isNotBlank() && password.isNotBlank(),
+            enabled = !isLoading && correo.isNotBlank() && password.isNotBlank(),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
@@ -114,18 +121,26 @@ fun WelcomeContent(
             )
         ) {
             Text(
-                if (authState.loading) "Ingresando..." else "Iniciar sesión",
+                if (isLoading) "Ingresando..." else "Iniciar sesión",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onPrimary
             )
         }
 
-        if (authState.errorMessage != null) Text(authState.errorMessage.orEmpty(), color = MaterialTheme.colorScheme.error)
+        // Si hay error, lo mostramos en pantalla
+        if (authState is AuthState.Error) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = (authState as AuthState.Error).message,
+                color = MaterialTheme.colorScheme.error,
+                textAlign = TextAlign.Center
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        TextButton(onClick = { /* Lógica para mostrar contacto de soporte */ }) {
+        TextButton(onClick = { /* Lógica de soporte */ }) {
             Text(
                 text = "¿Problemas de acceso? Contacta al administrador",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

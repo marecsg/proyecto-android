@@ -1,44 +1,57 @@
 package com.pe.data.repository
 
 import com.pe.data.remote.api.ApiClient
-import com.pe.data.remote.api.apiCall
-import com.pe.data.remote.dto.LoginRequestDto
-import com.pe.data.remote.dto.LoginResponseDto
-import com.pe.data.remote.dto.UsuarioDto
-import com.pe.domain.model.LabSession
+import com.pe.data.remote.dto.AuthResponse
+import com.pe.data.remote.dto.LoginRequest
+import com.pe.data.remote.mapper.toDomain
+import com.pe.domain.model.Usuario
 import com.pe.domain.repository.AuthRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.request.bearerAuth
-import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import io.ktor.http.isSuccess
+import pe.edu.upeu.data.local.SessionManager
 
-class AuthRepositoryImpl(private val client: HttpClient) : AuthRepository {
-    override suspend fun login(correo: String, password: String): LabSession = apiCall {
-        require(correo.isNotBlank() && password.isNotBlank()) { "Ingresa correo y contraseña" }
-        val correoLimpio = correo.trim()
-        val auth = client.post("${ApiClient.getBaseUrl()}/api/auth/login") {
-            contentType(ContentType.Application.Json)
-            setBody(LoginRequestDto(correoLimpio, password))
-        }.body<LoginResponseDto>()
-        require(auth.token.isNotBlank()) { "El servidor no devolvió un token" }
+class AuthRepositoryImpl(
+    private val client: HttpClient,
+    private val sessionManager: SessionManager
+) : AuthRepository {
 
-        // La respuesta de /login no incluye idUsuario; se obtiene en una segunda consulta.
-        val usuario = client.get("${ApiClient.getBaseUrl()}/api/usuarios/correo/$correoLimpio") {
-            bearerAuth(auth.token)
-        }.body<UsuarioDto>()
-        require(usuario.idUsuario > 0) { "No se encontró el ID del usuario" }
-        val fullName = listOf(usuario.nombres.orEmpty(), usuario.apellidos.orEmpty())
-            .filter { it.isNotBlank() }.joinToString(" ")
-        LabSession(
-            id = usuario.idUsuario,
-            nombre = fullName.ifBlank { auth.nombres },
-            correo = auth.correo.ifBlank { correoLimpio },
-            rol = auth.rol,
-            token = auth.token
-        )
+    private val baseUrl = ApiClient.getBaseUrl()
+
+    override suspend fun login(email: String, password: String): Result<Usuario> {
+        return try {
+            val response = client.post("$baseUrl/api/auth/login") {
+                contentType(ContentType.Application.Json)
+                setBody(LoginRequest(email.trim(), password))
+            }
+
+            if (response.status.isSuccess()) {
+                val authResponse = response.body<AuthResponse>()
+
+                // 🔍 Agrega estas líneas de depuración aquí mismo:
+                println("DEBUG LOGIN -> Token recibido: ${authResponse.token}")
+                println("DEBUG LOGIN -> ID Usuario: ${authResponse.user.idUsuario}")
+                println("DEBUG LOGIN -> Objeto Rol completo: ${authResponse.user.rol}")
+                println("DEBUG LOGIN -> Rol nombre: ${authResponse.user.rol?.nombre}")
+                println("DEBUG LOGIN -> rolString computado: ${authResponse.user.rolString}")
+
+                sessionManager.saveToken(authResponse.token)
+
+                Result.success(authResponse.toDomain())
+            } else {
+                val errorBody = response.body<String>()
+                println(">>> ERROR LOGIN HTTP ${response.status}: $errorBody")
+                Result.failure(Exception("Login failed: ${response.status}\n$errorBody"))
+            }
+        } catch (e: Exception) {
+            println(">>> EXCEPCIÓN EN LOGIN: ${e.message}")
+            e.printStackTrace()
+            Result.failure(e)
+        }
     }
 }

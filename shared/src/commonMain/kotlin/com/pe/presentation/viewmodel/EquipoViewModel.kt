@@ -3,9 +3,7 @@ package com.pe.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pe.domain.model.Equipment
-import com.pe.domain.model.LabSession
 import com.pe.domain.usecase.ObtenerEquiposUseCase
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -20,19 +18,21 @@ data class EquipoUiState(
 class EquipoViewModel(private val obtenerEquipos: ObtenerEquiposUseCase) : ViewModel() {
     private val _uiState = MutableStateFlow(EquipoUiState())
     val uiState = _uiState.asStateFlow()
-
-    fun load(session: LabSession) {
+    fun load() {
         viewModelScope.launch {
             _uiState.update { it.copy(loading = true, errorMessage = null) }
-            try {
-                val list = obtenerEquipos(session)
-                _uiState.update { it.copy(equipos = list, loading = false) }
-            } catch (ex: CancellationException) { throw ex }
-            catch (ex: Exception) {
-                _uiState.update { it.copy(loading = false, errorMessage = ex.message) }
+
+            val result = obtenerEquipos()
+
+            result.onSuccess { listaEquipos ->
+                _uiState.update { it.copy(equipos = listaEquipos, loading = false) }
+            }.onFailure { ex ->
+                _uiState.update { it.copy(loading = false, errorMessage = ex.message ?: "Error al cargar equipos") }
             }
         }
     }
 
-    fun clear() { _uiState.value = EquipoUiState() }
+    fun clear() {
+        _uiState.value = EquipoUiState()
+    }
 }

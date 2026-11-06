@@ -19,25 +19,24 @@ import com.pe.domain.model.*
 import com.pe.presentation.*
 import com.pe.presentation.theme.AppTheme
 import com.pe.presentation.viewmodel.AuthViewModel
+import com.pe.presentation.viewmodel.AuthState // <-- Importante el State
 import com.pe.presentation.viewmodel.EquipoViewModel
 import com.pe.presentation.viewmodel.PrestamoViewModel
 import org.koin.compose.KoinApplication
 import org.koin.compose.viewmodel.koinViewModel
 
-/**
- * Solo navegación y estado estrictamente visual.
- * No importamos Ktor, DTOs ni repositorios: el trabajo remoto va en los ViewModels.
- */
 @Composable
 fun App() {
     KoinApplication(application = { modules(appModule) }) {
         val authViewModel = koinViewModel<AuthViewModel>()
         val equipoViewModel = koinViewModel<EquipoViewModel>()
         val prestamoViewModel = koinViewModel<PrestamoViewModel>()
-        val authState by authViewModel.uiState.collectAsState()
+
+        val authState by authViewModel.state.collectAsState()
         val equipoState by equipoViewModel.uiState.collectAsState()
         val prestamoState by prestamoViewModel.uiState.collectAsState()
-        val session = authState.session
+
+        val session = (authState as? AuthState.Success)?.usuario
 
         AppTheme {
             var currentScreen by remember { mutableStateOf<Screen>(Screen.Splash) }
@@ -51,7 +50,7 @@ fun App() {
             var localMessage by remember { mutableStateOf<String?>(null) }
 
             fun logout() {
-                authViewModel.logout()
+                authViewModel.resetState()
                 equipoViewModel.clear()
                 prestamoViewModel.clear()
                 selectedEquipment = null
@@ -60,13 +59,16 @@ fun App() {
                 currentScreen = Screen.Welcome
             }
 
-            LaunchedEffect(currentScreen, session?.id, refreshVersion) {
+            LaunchedEffect(currentScreen, session?.idUsuario, refreshVersion) {
                 val s = session ?: return@LaunchedEffect
                 if (currentScreen != Screen.Home) return@LaunchedEffect
-                if (s.esEncargado) {
+
+                val esEncargadoRol = s.rol.equals("ENCARGADO", ignoreCase = true)
+
+                if (esEncargadoRol) {
                     prestamoViewModel.loadManager(s)
                 } else {
-                    equipoViewModel.load(s)
+                    equipoViewModel.load()
                     prestamoViewModel.loadStudent(s)
                 }
             }
@@ -93,9 +95,9 @@ fun App() {
                                 viewModel = authViewModel,
                                 onLoginSuccess = { currentScreen = Screen.Home }
                             )
-                        } else if (s.esEncargado) {
+                        } else if (s.rol.equals("ENCARGADO", ignoreCase = true)) {
                             ManagerLoansContent(
-                                nombre = s.nombre,
+                                nombre = s.nombres,
                                 loans = prestamoState.solicitudesEncargado,
                                 loading = prestamoState.loading || prestamoState.processing,
                                 errorMessage = prestamoState.errorMessage,
@@ -114,7 +116,7 @@ fun App() {
                                     incidents = incidents,
                                     loans = prestamoState.prestamos,
                                     historyEntries = historyEntries,
-                                    userName = s.nombre,
+                                    userName = s.nombres,
                                     userEmail = s.correo,
                                     onTabSelected = { homeSelectedTab = it; refreshVersion++ },
                                     onEquipmentClick = { selectedEquipment = it; currentScreen = Screen.EquipmentDetail },
@@ -163,7 +165,7 @@ fun App() {
                         val s = session
                         if (eq != null && s != null) LoanRequestContent(
                             equipment = eq,
-                            requesterName = s.nombre,
+                            requesterName = s.nombres,
                             isSubmitting = prestamoState.processing,
                             submitError = prestamoState.errorMessage,
                             onBack = {
@@ -210,10 +212,9 @@ fun App() {
                         equipmentList = equipoState.equipos,
                         onBack = { currentScreen = Screen.Home; homeSelectedTab = 2 },
                         onConfirm = { draft ->
-                            // Avance actual: incidencias en memoria; no hay persistencia remota todavía.
                             incidents = listOf(Incident(
                                 id = "INC-${1001 + incidents.size}", equipment = draft.equipment,
-                                reporter = session?.nombre ?: "Estudiante", type = draft.type,
+                                reporter = session?.nombres ?: "Estudiante", type = draft.type,
                                 description = draft.description, date = draft.date,
                                 status = IncidentStatus.REPORTED
                             )) + incidents

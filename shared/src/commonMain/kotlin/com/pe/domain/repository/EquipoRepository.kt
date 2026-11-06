@@ -1,8 +1,8 @@
 package com.pe.domain.repository
 
 import com.pe.domain.model.Equipment
-import com.pe.domain.model.LabSession
+import com.pe.domain.model.Usuario
 
 interface EquipoRepository {
-    suspend fun obtenerEquipos(session: LabSession): List<Equipment>
+    suspend fun obtenerEquipos(): Result<List<Equipment>>
 }
