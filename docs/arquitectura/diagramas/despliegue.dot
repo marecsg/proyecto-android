@@ -1,0 +1,12 @@
+digraph Despliegue {
+graph [rankdir=LR, fontsize=12, fontname="DejaVu Sans", label="UML | Despliegue de desarrollo, no producción", labelloc=t, bgcolor="white", nodesep=.65, ranksep=.9, pad=.2];
+node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=10, margin="0.2,0.13"];
+edge [fontname="DejaVu Sans", fontsize=9, color="#60768A", arrowsize=.7];
+subgraph cluster_emul {label="«device» Android emulado"; color="#2E8C94"; style=rounded; app [label="«artifact» Aplicación móvil KMP\nsnapshot 193fc9e (06/11)\n.apk: no verificado", fillcolor="#DDF2F1", color="#2E8C94"];}
+subgraph cluster_pc {label="«node» Equipo de desarrollo (local)"; color="#23618E"; style=rounded;
+api [label="«artifact» LabManager / Spring Boot\n0.0.1-SNAPSHOT · Java 21\nHTTP :8080 · snapshot 03b11e1", fillcolor="#D9EAF7", color="#23618E"];
+db [label="«database» MySQL\nlabmanager · TCP :3306\nversión no confirmada", fillcolor="#FFF0CF", color="#B58B33"];
+api -> db [label="JDBC / TCP 3306"];
+}
+app -> api [label="HTTP/JSON a 10.0.2.2:8080\n(solo emulador)"];
+}

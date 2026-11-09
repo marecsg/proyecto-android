@@ -1,0 +1,14 @@
+digraph Contenedores {
+graph [rankdir=TB, fontsize=12, fontname="DejaVu Sans", label="C4 nivel 2 | Contenedores lógicos (no implica Docker)", labelloc=t, bgcolor="white", nodesep=.7, ranksep=1.0, pad=.22];
+node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=10, margin="0.17,0.14", color="#205C8D"];
+edge [fontname="DejaVu Sans", fontsize=9, color="#597389", arrowsize=.7];
+usuario [label="Estudiante / Encargado", fillcolor="#E5EDF3"];
+app [label="App Kotlin Multiplatform\nCompose · Ktor · Koin\nPresentation / Domain / Data", fillcolor="#D6F0F0", color="#00838E"];
+api [label="API Spring Boot\nControladores · Servicios\nRepositorios · Spring Security/JWT", fillcolor="#CFE4F4"];
+mysql [label="MySQL\nUsuarios · Equipos · Solicitudes\nIncidencias (esquema por verificar)", fillcolor="#FFF3DB", color="#B38A34"];
+externo [label="Datos maestros externos\nSUPUESTO, no integrado", fillcolor="#F7F4ED", color="#B38A34", style="rounded,filled,dashed"];
+usuario -> app [label="Interfaz móvil"];
+app -> api [label="HTTP/JSON · REST\n10.0.2.2:8080 en emulador"];
+api -> mysql [label="JPA / JDBC · 3306"];
+externo -> api [label="Carga de datos (pendiente)", style=dashed];
+}

@@ -1,0 +1,13 @@
+digraph Pipeline {
+graph [rankdir=TB, fontsize=12, fontname="DejaVu Sans", label="Pipeline CI/CD | flujo propuesto, NO configurado", labelloc=t, bgcolor="white", nodesep=.55, ranksep=.48, pad=.22];
+node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=10, margin="0.18,0.12", fillcolor="#E4EEF6", color="#2B6890"];
+edge [fontname="DejaVu Sans", fontsize=9, arrowsize=.7, color="#507389"];
+commit [label="1. Push / PR\nGitHub repos", fillcolor="#E0E8EF"];
+static [label="2. Validación\nLint + dependencias"];
+android [label="3A. Android\nGradle build + test"];
+backend [label="3B. Spring Boot\nMaven test + package"];
+integrate [label="4. Prueba API / BD\nContratos + anti-solape", fillcolor="#D8EEEE", color="#00848B"];
+artifact [label="5. Artefactos versionados\nAPK / JAR + evidencias", fillcolor="#D8EEEE", color="#00848B"];
+deploy [label="6. Despliegue\nManual aprobado o CD futuro", fillcolor="#FFF1D7", color="#B18B44"];
+commit -> static [style=dashed]; static -> android [style=dashed]; static -> backend [style=dashed]; android -> integrate [style=dashed]; backend -> integrate [style=dashed]; integrate -> artifact [style=dashed]; artifact -> deploy [style=dashed];
+}

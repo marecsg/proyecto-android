@@ -1,0 +1,19 @@
+digraph Infra {
+graph [rankdir=TB, fontsize=12, fontname="DejaVu Sans", label="Infraestructura | Estado observado vs. producción propuesta", labelloc=t, compound=true, bgcolor="white", pad=.3, nodesep=.55, ranksep=.68];
+node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=10, margin="0.15,0.1"];
+edge [fontname="DejaVu Sans", fontsize=9, color="#52677C", arrowsize=.7];
+subgraph cluster_dev {label="DEVELOP / LOCAL (configuración localizada en repositorios)"; color="#34899C"; style="rounded"; bgcolor="#F3FBFC";
+android [label="Emulador Android / dispositivo\nApp KMP · URL 10.0.2.2:8080", fillcolor="#D7F0EE", color="#34899C"];
+backend [label="Equipo de desarrollo\nSpring Boot · puerto 8080", fillcolor="#DCECF7", color="#23618E"];
+mysql [label="MySQL local · puerto 3306\nVersión no acreditada", fillcolor="#FFF0CE", color="#B48B37"];
+android -> backend [label="HTTP en ambiente local"];
+backend -> mysql [label="JDBC localhost:3306"];
+}
+git [label="GitHub: dos repositorios privados\nAndroid y backend (versión parcial)", fillcolor="#E7ECF2", color="#7B8694"];
+git -> backend [label="Código fuente / actualización manual", style=dashed];
+git -> android [label="Código fuente / actualización manual", style=dashed];
+subgraph cluster_prod {label="PRODUCCIÓN (NO IMPLEMENTADA / diseño por aprobar)"; color="#C89B52"; style="dashed,rounded"; bgcolor="#FFFDF9";
+prod [label="Servidor, dominio, HTTPS, BD, respaldos\ny CI/CD: por decidir y evidenciar", fillcolor="#FDF4E2", color="#C89B52"];
+}
+backend -> prod [label="Despliegue FUTURO", style=dotted, color="#9A8D77"];
+}

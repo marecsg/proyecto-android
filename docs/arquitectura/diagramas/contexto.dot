@@ -1,0 +1,13 @@
+digraph Contexto {
+graph [rankdir=LR, fontsize=12, fontname="DejaVu Sans", label="C4 nivel 1 | Contexto del GLE-2026-II", labelloc=t, bgcolor="white", nodesep=0.65, ranksep=1.1, pad=0.26];
+node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=10.5, margin="0.17,0.13", color="#205C8D", penwidth=1.1]; edge [fontname="DejaVu Sans", fontsize=9, color="#58738C", arrowsize=0.7];
+est [label="Estudiante\nConsulta equipos, solicita y reporta", fillcolor="#DDEEF9"];
+enc [label="Encargado de laboratorio\nEvalúa y recibe préstamos", fillcolor="#DDEEF9"];
+coord [label="Coordinación / Facultad\nInteresado; supervisa el proceso", fillcolor="#F0F3F6"];
+gle [label="GLE-2026-II\nSistema de gestión de equipos por QR", fillcolor="#174D7F", fontcolor="white", fontsize=13];
+master [label="Datos maestros institucionales\nUsuarios y equipos (supuesto pendiente)", fillcolor="#FFF3DB", color="#BD8A2F", style="rounded,filled,dashed"];
+est -> gle [label="App móvil / API"];
+enc -> gle [label="App móvil / API"];
+coord -> gle [label="Consulta / seguimiento\n(alcance por verificar)", style=dashed];
+master -> gle [label="Provisión de datos\n(integración no probada)", style=dashed];
+}
