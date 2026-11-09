@@ -27,9 +27,3 @@ Get-ChildItem docs/arquitectura/diagramas/*.dot | ForEach-Object { dot -Tpng -Gd
 
 - Móvil: https://github.com/marecsg/proyecto-android (snapshot `193fc9e`)
 - Backend: https://github.com/marecsg/proyecto-backend (snapshot `03b11e1`, señalado como desactualizado por el equipo)
-
-**No se deben declarar pruebas aprobadas ni despliegue de producción sin evidencia.** La matriz `Matriz_Entregable.xlsx` tiene casos con `Resultado obtenido = Éxito` y `Estado = Pendiente`; esos casos se consideran pendientes hasta adjuntar logs, capturas y fecha de ejecución.
-
-## Integración
-
-Copiar `docs/` a la raíz del repositorio Android y, si se desea, enlazarla desde el README del backend. Confirmar antes de entregar: número de equipo, roles RACI, backend actualizado, versión MySQL, diagramas vs código, pruebas CP, URL del repositorio y versiones con soporte vigente.
