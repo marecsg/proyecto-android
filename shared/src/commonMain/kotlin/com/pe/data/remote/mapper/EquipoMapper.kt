@@ -1,22 +1,19 @@
 package com.pe.data.remote.mapper
 
 import com.pe.data.remote.dto.EquipoDto
-import com.pe.domain.model.Equipment
-import com.pe.domain.model.EquipmentStatus
+import com.pe.domain.model.DisponibilidadEquipo
+import com.pe.domain.model.Equipo
+import com.pe.domain.model.EstadoFisicoEquipo
 
-fun EquipoDto.toDomain(): Equipment {
-    val status = when {
-        estadoFisico != "OPERATIVO" -> EquipmentStatus.MAINTENANCE
-        disponibilidad == "DISPONIBLE" -> EquipmentStatus.AVAILABLE
-        else -> EquipmentStatus.LOANED
-    }
-    return Equipment(
-        id = codigoQr.orEmpty(),
-        name = nombre.orEmpty(),
-        category = "Equipo de laboratorio",
-        laboratory = ambiente?.nombre.orEmpty(),
-        status = status,
-        description = descripcion.orEmpty(),
-        remoteId = idEquipo
+fun EquipoDto.toDomain(): Equipo {
+    return Equipo(
+        idEquipo = idEquipo,
+        codigoQr = codigoQr.orEmpty(),
+        nombre = nombre ?: "Equipo sin nombre",
+        descripcion = descripcion ?: "Sin descripción",
+        idAmbiente = idAmbiente ?: 0,
+        nombreAmbiente = nombreAmbiente ?: "Sin ambiente asignado",
+        estadoFisico = EstadoFisicoEquipo.desdeTexto(estadoFisico),
+        disponibilidad = DisponibilidadEquipo.desdeTexto(disponibilidad)
     )
 }

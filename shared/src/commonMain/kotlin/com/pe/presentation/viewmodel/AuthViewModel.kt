@@ -3,12 +3,10 @@ package com.pe.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pe.domain.model.Usuario
-import com.pe.domain.usecase.LoginUseCase
-import kotlinx.coroutines.CancellationException
+import com.pe.domain.usecase.Auth.LoginUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pe.edu.upeu.data.local.SessionManager
 

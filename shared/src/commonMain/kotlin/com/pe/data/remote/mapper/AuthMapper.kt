@@ -6,13 +6,17 @@ import com.pe.domain.model.Usuario
 
 
 fun AuthResponse.toDomain(): Usuario {
+    return this.user.toDomain()
+}
+fun UsuarioDto.toDomain(): Usuario {
     return Usuario(
-        idUsuario = this.user.idUsuario,
-        codigoInstitucional = this.user.codigoInstitucional ?: "",
-        nombres = this.user.nombres ?: "",
-        apellidos = this.user.apellidos ?: "",
-        correo = this.user.correo ?: "",
-        rol = this.user.finalRolString, // 👈 Usamos la propiedad unificada
-        token = this.token
+        idUsuario = idUsuario,
+        codigoInstitucional = codigoInstitucional.orEmpty(),
+        nombres = nombres.orEmpty(),
+        apellidos = apellidos.orEmpty(),
+        correo = correo.orEmpty(),
+        rol = rol?.uppercase() ?: "ESTUDIANTE",
+        idAmbiente = idAmbiente,
+        nombreAmbiente = nombreAmbiente
     )
 }

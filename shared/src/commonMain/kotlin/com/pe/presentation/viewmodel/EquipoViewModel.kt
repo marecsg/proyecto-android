@@ -3,7 +3,7 @@ package com.pe.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pe.domain.model.Equipment
-import com.pe.domain.usecase.ObtenerEquiposUseCase
+import com.pe.domain.usecase.Equipos.ObtenerEquiposUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update

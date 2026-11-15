@@ -10,5 +10,12 @@ data class Usuario(
     val apellidos: String,
     val correo: String,
     val rol: String,
-    val token: String? = null
-)
+    val idAmbiente: Int? = null,
+    val nombreAmbiente: String? = null
+) {
+    val nombreCompleto: String
+        get() = "$nombres $apellidos".trim()
+
+    val esEncargado: Boolean
+        get() = rol.equals("ENCARGADO", ignoreCase = true)
+}

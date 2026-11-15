@@ -3,7 +3,10 @@ package com.pe.di
 import com.pe.data.remote.api.ApiClient
 import com.pe.data.repository.*
 import com.pe.domain.repository.*
-import com.pe.domain.usecase.*
+import com.pe.domain.usecase.Auth.LoginUseCase
+import com.pe.domain.usecase.Equipos.ObtenerEquiposUseCase
+import com.pe.domain.usecase.Prestamo.ObtenerPrestamosAmbienteUseCase
+import com.pe.domain.usecase.Prestamo.ObtenerPrestamosEstudianteUseCase
 import com.pe.presentation.viewmodel.*
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -24,9 +27,9 @@ val appModule = module {
     factory { LoginUseCase(get()) }
     factory { ObtenerEquiposUseCase(get()) }
     factory { ObtenerPrestamosEstudianteUseCase(get()) }
-    factory { ObtenerPrestamosEncargadoUseCase(get()) }
+    factory { ObtenerPrestamosAmbienteUseCase(get()) }
     factory { SolicitarPrestamoUseCase(get()) }
-    factory { ResponderPrestamoUseCase(get()) }
+    factory { AprobarSolicitudPrestamoUseCase(get()) }
 
     viewModel { AuthViewModel(get(), get()) }
     viewModel { EquipoViewModel(get()) }

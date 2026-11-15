@@ -22,31 +22,27 @@ class AuthRepositoryImpl(
 ) : AuthRepository {
 
     private val baseUrl = ApiClient.getBaseUrl()
-
-    override suspend fun login(email: String, password: String): Result<Usuario> {
+    override suspend fun login(correo: String, password: String): Result<Usuario> {
         return try {
+
             val response = client.post("$baseUrl/api/auth/login") {
                 contentType(ContentType.Application.Json)
-                setBody(LoginRequest(email.trim(), password))
+                setBody(LoginRequest(correo = correo.trim(), password = password))
             }
 
             if (response.status.isSuccess()) {
+
                 val authResponse = response.body<AuthResponse>()
-
-                // 🔍 Agrega estas líneas de depuración aquí mismo:
-                println("DEBUG LOGIN -> Token recibido: ${authResponse.token}")
-                println("DEBUG LOGIN -> ID Usuario: ${authResponse.user.idUsuario}")
-                println("DEBUG LOGIN -> Objeto Rol completo: ${authResponse.user.rol}")
-                println("DEBUG LOGIN -> Rol nombre: ${authResponse.user.rol?.nombre}")
-                println("DEBUG LOGIN -> rolString computado: ${authResponse.user.rolString}")
-
+                val usuario = authResponse.toDomain()
                 sessionManager.saveToken(authResponse.token)
+                sessionManager.saveUser(usuario)
+                Result.success(usuario)
 
-                Result.success(authResponse.toDomain())
             } else {
-                val errorBody = response.body<String>()
+
+                val errorBody = response.bodyAsText()
                 println(">>> ERROR LOGIN HTTP ${response.status}: $errorBody")
-                Result.failure(Exception("Login failed: ${response.status}\n$errorBody"))
+                Result.failure(Exception("Error de inicio de sesión (${response.status.value}): $errorBody"))
             }
         } catch (e: Exception) {
             println(">>> EXCEPCIÓN EN LOGIN: ${e.message}")

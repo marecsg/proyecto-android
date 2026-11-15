@@ -7,6 +7,8 @@ import com.pe.domain.model.Usuario
 import com.pe.domain.model.Loan
 import com.pe.domain.model.LoanDraft
 import com.pe.domain.usecase.*
+import com.pe.domain.usecase.Prestamo.ObtenerPrestamosAmbienteUseCase
+import com.pe.domain.usecase.Prestamo.ObtenerPrestamosEstudianteUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -25,9 +27,9 @@ data class PrestamoUiState(
 
 class PrestamoViewModel(
     private val obtenerEstudiante: ObtenerPrestamosEstudianteUseCase,
-    private val obtenerEncargado: ObtenerPrestamosEncargadoUseCase,
+    private val obtenerEncargado: ObtenerPrestamosAmbienteUseCase,
     private val solicitarPrestamo: SolicitarPrestamoUseCase,
-    private val responderPrestamo: ResponderPrestamoUseCase
+    private val responderPrestamo: AprobarSolicitudPrestamoUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(PrestamoUiState())
     val uiState = _uiState.asStateFlow()

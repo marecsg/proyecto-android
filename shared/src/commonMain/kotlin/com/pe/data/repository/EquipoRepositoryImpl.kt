@@ -3,12 +3,13 @@ package com.pe.data.repository
 import com.pe.data.remote.api.ApiClient
 import com.pe.data.remote.dto.EquipoDto
 import com.pe.data.remote.mapper.toDomain
-import com.pe.domain.model.Equipment
+import com.pe.domain.model.Equipo
 import com.pe.domain.repository.EquipoRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
@@ -19,30 +20,65 @@ class EquipoRepositoryImpl(
     private val client: HttpClient,
     private val sessionManager: SessionManager
 ) : EquipoRepository {
+
     private val baseUrl = ApiClient.getBaseUrl()
 
-    override suspend fun obtenerEquipos(): Result<List<Equipment>> {
+    override suspend fun obtenerEquipos(): Result<List<Equipo>> {
         return try {
-            val token = sessionManager.getToken() ?: ""
-            println("DEBUG EQUIPOS -> TOKEN: '$token'")
-
+            val token = sessionManager.getToken().orEmpty()
             val response = client.get("$baseUrl/api/equipos") {
                 contentType(ContentType.Application.Json)
                 header(HttpHeaders.Authorization, "Bearer $token")
             }
-            println("DEBUG EQUIPOS -> STATUS: ${response.status}")
 
             if (response.status.isSuccess()) {
                 val equipoDtos = response.body<List<EquipoDto>>()
-                println("DEBUG EQUIPOS -> Cantidad obtenida: ${equipoDtos.size}")
                 Result.success(equipoDtos.map { it.toDomain() })
             } else {
-                val errorBody = try { response.body<String>() } catch(_: Exception) { "No body" }
-                println("DEBUG EQUIPOS -> ERROR BODY: $errorBody")
-                Result.failure(Exception("Failed to fetch equipos: ${response.status}"))
+                val errorBody = response.bodyAsText()
+                Result.failure(Exception("Error al obtener equipos (${response.status.value}): $errorBody"))
             }
         } catch (e: Exception) {
-            println("DEBUG EQUIPOS -> EXCEPTION: ${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun obtenerEquipoPorId(idEquipo: Int): Result<Equipo> {
+        return try {
+            val token = sessionManager.getToken().orEmpty()
+            val response = client.get("$baseUrl/api/equipos/$idEquipo") {
+                contentType(ContentType.Application.Json)
+                header(HttpHeaders.Authorization, "Bearer $token")
+            }
+
+            if (response.status.isSuccess()) {
+                val dto = response.body<EquipoDto>()
+                Result.success(dto.toDomain())
+            } else {
+                val errorBody = response.bodyAsText()
+                Result.failure(Exception("Equipo no encontrado (${response.status.value}): $errorBody"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun obtenerEquipoPorQr(codigoQr: String): Result<Equipo> {
+        return try {
+            val token = sessionManager.getToken().orEmpty()
+            val response = client.get("$baseUrl/api/equipos/qr/$codigoQr") {
+                contentType(ContentType.Application.Json)
+                header(HttpHeaders.Authorization, "Bearer $token")
+            }
+
+            if (response.status.isSuccess()) {
+                val dto = response.body<EquipoDto>()
+                Result.success(dto.toDomain())
+            } else {
+                val errorBody = response.bodyAsText()
+                Result.failure(Exception("QR no registrado (${response.status.value}): $errorBody"))
+            }
+        } catch (e: Exception) {
             Result.failure(e)
         }
     }
