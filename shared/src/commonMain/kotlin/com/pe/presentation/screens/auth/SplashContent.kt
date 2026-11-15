@@ -1,4 +1,4 @@
-package com.pe.presentation
+package com.pe.presentation.screens.auth
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween

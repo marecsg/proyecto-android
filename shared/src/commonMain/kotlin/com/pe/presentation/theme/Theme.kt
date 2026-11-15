@@ -77,6 +77,7 @@ fun AppTheme(
     CompositionLocalProvider(LocalExtendedColors provides LabExtendedColors) {
         MaterialTheme(
             colorScheme = ModernBlueColorScheme,
+            typography = TipografiaApp,
             content = content
         )
     }

@@ -1,4 +1,4 @@
-package com.pe.presentation
+package com.pe.presentation.screens.prestamos
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement

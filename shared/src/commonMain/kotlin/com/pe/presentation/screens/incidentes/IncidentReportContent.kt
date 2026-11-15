@@ -1,4 +1,4 @@
-package com.pe.presentation
+package com.pe.presentation.screens.incidentes
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement

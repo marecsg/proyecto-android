@@ -1,4 +1,4 @@
-package com.pe.presentation
+package com.pe.presentation.screens.auth
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -27,8 +27,6 @@ import androidx.compose.material.icons.filled.Report
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Badge
 import com.pe.domain.model.Incident
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -54,6 +52,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.pe.domain.model.Equipment
 import com.pe.domain.model.Loan
+import com.pe.presentation.screens.historial.HistoryContent
+import com.pe.presentation.screens.incidentes.IncidentsContent
+import com.pe.presentation.screens.prestamos.LoansContent
+import com.pe.presentation.screens.equipos.EquipmentContent
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)

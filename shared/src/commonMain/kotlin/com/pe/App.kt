@@ -17,6 +17,17 @@ import androidx.compose.ui.Modifier
 import com.pe.di.appModule
 import com.pe.domain.model.*
 import com.pe.presentation.*
+import com.pe.presentation.screens.incidentes.IncidentDetailContent
+import com.pe.presentation.screens.incidentes.IncidentReportContent
+import com.pe.presentation.screens.auth.HomeContent
+import com.pe.presentation.screens.auth.ProfileUpdateContent
+import com.pe.presentation.screens.auth.SplashContent
+import com.pe.presentation.screens.auth.WelcomeContent
+import com.pe.presentation.screens.equipos.EquipmentDetailContent
+import com.pe.presentation.screens.prestamos.LoanConfirmationContent
+import com.pe.presentation.screens.prestamos.LoanDetailContent
+import com.pe.presentation.screens.prestamos.LoanRequestContent
+import com.pe.presentation.screens.prestamos.ManagerLoansContent
 import com.pe.presentation.theme.AppTheme
 import com.pe.presentation.viewmodel.AuthViewModel
 import com.pe.presentation.viewmodel.AuthState // <-- Importante el State
@@ -119,14 +130,22 @@ fun App() {
                                     userName = s.nombres,
                                     userEmail = s.correo,
                                     onTabSelected = { homeSelectedTab = it; refreshVersion++ },
-                                    onEquipmentClick = { selectedEquipment = it; currentScreen = Screen.EquipmentDetail },
-                                    onLoanClick = { selectedLoan = it; currentScreen = Screen.LoanDetail },
-                                    onIncidentClick = { selectedIncident = it; currentScreen = Screen.IncidentDetail },
+                                    onEquipmentClick = {
+                                        selectedEquipment = it; currentScreen =
+                                        Screen.EquipmentDetail
+                                    },
+                                    onLoanClick = {
+                                        selectedLoan = it; currentScreen = Screen.LoanDetail
+                                    },
+                                    onIncidentClick = {
+                                        selectedIncident = it; currentScreen = Screen.IncidentDetail
+                                    },
                                     onLogout = { logout() },
                                     onEditProfile = { currentScreen = Screen.ProfileUpdate },
                                     onReportIncident = { currentScreen = Screen.IncidentReport },
                                     onScanQr = {
-                                        localMessage = "El escáner QR todavía no está implementado. Selecciona un equipo de la lista."
+                                        localMessage =
+                                            "El escáner QR todavía no está implementado. Selecciona un equipo de la lista."
                                     }
                                 )
                                 if (equipoState.loading || prestamoState.loading) {
@@ -203,8 +222,13 @@ fun App() {
                         val loan = selectedLoan
                         if (loan != null) LoanDetailContent(
                             loan = loan,
-                            onBack = { homeSelectedTab = 1; refreshVersion++; currentScreen = Screen.Home },
-                            onCancelLoan = { localMessage = "La cancelación requiere un endpoint nuevo en el backend" }
+                            onBack = {
+                                homeSelectedTab = 1; refreshVersion++; currentScreen = Screen.Home
+                            },
+                            onCancelLoan = {
+                                localMessage =
+                                    "La cancelación requiere un endpoint nuevo en el backend"
+                            }
                         ) else currentScreen = Screen.Home
                     }
 
@@ -212,12 +236,17 @@ fun App() {
                         equipmentList = equipoState.equipos,
                         onBack = { currentScreen = Screen.Home; homeSelectedTab = 2 },
                         onConfirm = { draft ->
-                            incidents = listOf(Incident(
-                                id = "INC-${1001 + incidents.size}", equipment = draft.equipment,
-                                reporter = session?.nombres ?: "Estudiante", type = draft.type,
-                                description = draft.description, date = draft.date,
-                                status = IncidentStatus.REPORTED
-                            )) + incidents
+                            incidents = listOf(
+                                Incident(
+                                    id = "INC-${1001 + incidents.size}",
+                                    equipment = draft.equipment,
+                                    reporter = session?.nombres ?: "Estudiante",
+                                    type = draft.type,
+                                    description = draft.description,
+                                    date = draft.date,
+                                    status = IncidentStatus.REPORTED
+                                )
+                            ) + incidents
                             homeSelectedTab = 2
                             currentScreen = Screen.Home
                         }

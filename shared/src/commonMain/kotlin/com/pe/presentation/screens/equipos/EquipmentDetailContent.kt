@@ -1,13 +1,18 @@
-package com.pe.presentation
+package com.pe.presentation.screens.equipos
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Devices
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -22,14 +27,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.pe.presentation.components.IncidentStatusChip
-import com.pe.domain.model.Incident
+import com.pe.presentation.components.EquipmentStatusChip
+import com.pe.domain.model.Equipment
+import com.pe.domain.model.EquipmentStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun IncidentDetailContent(
-    incident: Incident,
-    onBack: () -> Unit
+fun EquipmentDetailContent(
+    equipment: Equipment,
+    onBack: () -> Unit,
+    onRequestLoan: () -> Unit
 ) {
 
     Scaffold(
@@ -37,7 +44,7 @@ fun IncidentDetailContent(
 
             TopAppBar(
                 title = {
-                    Text("Detalle de incidencia")
+                    Text("Detalle del equipo")
                 },
                 navigationIcon = {
 
@@ -65,7 +72,7 @@ fun IncidentDetailContent(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(18.dp)
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
 
             Row(
@@ -73,26 +80,36 @@ fun IncidentDetailContent(
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
+                Icon(
+                    imageVector = Icons.Default.Devices,
+                    contentDescription = null,
+                    modifier = Modifier.size(64.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+
                 Column(
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
 
                     Text(
-                        text = incident.type,
+                        text = equipment.name,
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
 
                     Text(
-                        text = incident.id,
+                        text = equipment.id,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                }
 
-                IncidentStatusChip(
-                    status = incident.status
-                )
+                    EquipmentStatusChip(
+                        status = equipment.status
+                    )
+                }
             }
 
             Card(
@@ -104,34 +121,19 @@ fun IncidentDetailContent(
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
 
-                    IncidentDetailRow(
-                        label = "Equipo afectado",
-                        value = incident.equipment.name
+                    DetailRow(
+                        label = "Categoría",
+                        value = equipment.category
                     )
 
-                    IncidentDetailRow(
-                        label = "Código del equipo",
-                        value = incident.equipment.id
-                    )
-
-                    IncidentDetailRow(
+                    DetailRow(
                         label = "Laboratorio",
-                        value = incident.equipment.laboratory
+                        value = equipment.laboratory
                     )
 
-                    IncidentDetailRow(
-                        label = "Reportado por",
-                        value = incident.reporter
-                    )
-
-                    IncidentDetailRow(
-                        label = "Fecha",
-                        value = incident.date
-                    )
-
-                    IncidentDetailRow(
-                        label = "Estado",
-                        value = incident.status.label
+                    DetailRow(
+                        label = "Código",
+                        value = equipment.id
                     )
                 }
             }
@@ -139,16 +141,50 @@ fun IncidentDetailContent(
             Column {
 
                 Text(
-                    text = "Descripción del problema",
+                    text = "Descripción",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
 
                 Text(
-                    text = incident.description,
+                    text = equipment.description,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+
+            Spacer(
+                modifier = Modifier.height(4.dp)
+            )
+
+            Button(
+                onClick = onRequestLoan,
+                enabled = equipment.status == EquipmentStatus.AVAILABLE,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(54.dp)
+            ) {
+
+                Text(
+                    text = if (
+                        equipment.status == EquipmentStatus.AVAILABLE
+                    ) {
+                        "Solicitar préstamo"
+                    } else {
+                        "Equipo no disponible"
+                    }
+                )
+            }
+
+            if (
+                equipment.status != EquipmentStatus.AVAILABLE
+            ) {
+
+                Text(
+                    text = "Este equipo no puede solicitarse mientras se encuentre ${equipment.status.label.lowercase()}.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -156,7 +192,7 @@ fun IncidentDetailContent(
 }
 
 @Composable
-private fun IncidentDetailRow(
+private fun DetailRow(
     label: String,
     value: String
 ) {

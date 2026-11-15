@@ -1,4 +1,4 @@
-package com.pe.presentation
+package com.pe.presentation.screens.incidentes
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -23,17 +22,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.pe.presentation.components.LoanStatusChip
-import com.pe.domain.model.Loan
-import com.pe.domain.model.LoanStatus
-import com.pe.presentation.format.horaLegible
+import com.pe.presentation.components.IncidentStatusChip
+import com.pe.domain.model.Incident
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoanDetailContent(
-    loan: Loan,
-    onBack: () -> Unit,
-    onCancelLoan: () -> Unit
+fun IncidentDetailContent(
+    incident: Incident,
+    onBack: () -> Unit
 ) {
 
     Scaffold(
@@ -41,7 +37,7 @@ fun LoanDetailContent(
 
             TopAppBar(
                 title = {
-                    Text("Detalle del préstamo")
+                    Text("Detalle de incidencia")
                 },
                 navigationIcon = {
 
@@ -82,20 +78,20 @@ fun LoanDetailContent(
                 ) {
 
                     Text(
-                        text = loan.equipment.name,
+                        text = incident.type,
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
 
                     Text(
-                        text = loan.id,
+                        text = incident.id,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
-                LoanStatusChip(
-                    status = loan.status
+                IncidentStatusChip(
+                    status = incident.status
                 )
             }
 
@@ -108,54 +104,34 @@ fun LoanDetailContent(
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
 
-                    LoanDetailRow(
-                        label = "Equipo",
-                        value = loan.equipment.name
+                    IncidentDetailRow(
+                        label = "Equipo afectado",
+                        value = incident.equipment.name
                     )
 
-                    LoanDetailRow(
+                    IncidentDetailRow(
                         label = "Código del equipo",
-                        value = loan.equipment.id
+                        value = incident.equipment.id
                     )
 
-                    LoanDetailRow(
+                    IncidentDetailRow(
                         label = "Laboratorio",
-                        value = loan.equipment.laboratory
+                        value = incident.equipment.laboratory
                     )
 
-                    LoanDetailRow(
-                        label = "Solicitante",
-                        value = loan.requester
+                    IncidentDetailRow(
+                        label = "Reportado por",
+                        value = incident.reporter
                     )
 
-                    LoanDetailRow(
-                        label = "Curso",
-                        value = loan.course
+                    IncidentDetailRow(
+                        label = "Fecha",
+                        value = incident.date
                     )
 
-                    LoanDetailRow(
-                        label = "Docente",
-                        value = loan.teacher
-                    )
-
-                    LoanDetailRow(
-                        label = "Fecha de recogida",
-                        value = loan.date
-                    )
-
-                    LoanDetailRow(
-                        label = "Hora de recogida",
-                        value = horaLegible(loan.startTime)
-                    )
-
-                    LoanDetailRow(
-                        label = "Fecha de devolución",
-                        value = loan.returnDate
-                    )
-
-                    LoanDetailRow(
-                        label = "Hora de devolución",
-                        value = horaLegible(loan.endTime)
+                    IncidentDetailRow(
+                        label = "Estado",
+                        value = incident.status.label
                     )
                 }
             }
@@ -163,25 +139,16 @@ fun LoanDetailContent(
             Column {
 
                 Text(
-                    text = "Motivo / observación",
+                    text = "Descripción del problema",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
 
                 Text(
-                    text = loan.reason,
+                    text = incident.description,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 6.dp)
-                )
-            }
-
-            if (loan.status == LoanStatus.PENDING) {
-
-                Text(
-                    text = "Solicitud pendiente. La cancelación desde Android aún no está habilitada en esta versión.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    modifier = Modifier.padding(top = 8.dp)
                 )
             }
         }
@@ -189,7 +156,7 @@ fun LoanDetailContent(
 }
 
 @Composable
-private fun LoanDetailRow(
+private fun IncidentDetailRow(
     label: String,
     value: String
 ) {

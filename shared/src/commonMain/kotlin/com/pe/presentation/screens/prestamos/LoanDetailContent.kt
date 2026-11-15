@@ -1,18 +1,13 @@
-package com.pe.presentation
+package com.pe.presentation.screens.prestamos
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Devices
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -27,16 +22,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.pe.presentation.components.EquipmentStatusChip
-import com.pe.domain.model.Equipment
-import com.pe.domain.model.EquipmentStatus
+import com.pe.presentation.components.LoanStatusChip
+import com.pe.domain.model.Loan
+import com.pe.domain.model.LoanStatus
+import com.pe.presentation.format.horaLegible
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EquipmentDetailContent(
-    equipment: Equipment,
+fun LoanDetailContent(
+    loan: Loan,
     onBack: () -> Unit,
-    onRequestLoan: () -> Unit
+    onCancelLoan: () -> Unit
 ) {
 
     Scaffold(
@@ -44,7 +40,7 @@ fun EquipmentDetailContent(
 
             TopAppBar(
                 title = {
-                    Text("Detalle del equipo")
+                    Text("Detalle del préstamo")
                 },
                 navigationIcon = {
 
@@ -72,7 +68,7 @@ fun EquipmentDetailContent(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+            verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
 
             Row(
@@ -80,36 +76,26 @@ fun EquipmentDetailContent(
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
-                Icon(
-                    imageVector = Icons.Default.Devices,
-                    contentDescription = null,
-                    modifier = Modifier.size(64.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-
                 Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                    modifier = Modifier.weight(1f)
                 ) {
 
                     Text(
-                        text = equipment.name,
+                        text = loan.equipment.name,
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
 
                     Text(
-                        text = equipment.id,
+                        text = loan.id,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-
-                    EquipmentStatusChip(
-                        status = equipment.status
-                    )
                 }
+
+                LoanStatusChip(
+                    status = loan.status
+                )
             }
 
             Card(
@@ -121,19 +107,54 @@ fun EquipmentDetailContent(
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
 
-                    DetailRow(
-                        label = "Categoría",
-                        value = equipment.category
+                    LoanDetailRow(
+                        label = "Equipo",
+                        value = loan.equipment.name
                     )
 
-                    DetailRow(
+                    LoanDetailRow(
+                        label = "Código del equipo",
+                        value = loan.equipment.id
+                    )
+
+                    LoanDetailRow(
                         label = "Laboratorio",
-                        value = equipment.laboratory
+                        value = loan.equipment.laboratory
                     )
 
-                    DetailRow(
-                        label = "Código",
-                        value = equipment.id
+                    LoanDetailRow(
+                        label = "Solicitante",
+                        value = loan.requester
+                    )
+
+                    LoanDetailRow(
+                        label = "Curso",
+                        value = loan.course
+                    )
+
+                    LoanDetailRow(
+                        label = "Docente",
+                        value = loan.teacher
+                    )
+
+                    LoanDetailRow(
+                        label = "Fecha de recogida",
+                        value = loan.date
+                    )
+
+                    LoanDetailRow(
+                        label = "Hora de recogida",
+                        value = horaLegible(loan.startTime)
+                    )
+
+                    LoanDetailRow(
+                        label = "Fecha de devolución",
+                        value = loan.returnDate
+                    )
+
+                    LoanDetailRow(
+                        label = "Hora de devolución",
+                        value = horaLegible(loan.endTime)
                     )
                 }
             }
@@ -141,48 +162,23 @@ fun EquipmentDetailContent(
             Column {
 
                 Text(
-                    text = "Descripción",
+                    text = "Motivo / observación",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
 
                 Text(
-                    text = equipment.description,
+                    text = loan.reason,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 8.dp)
+                    modifier = Modifier.padding(top = 6.dp)
                 )
             }
 
-            Spacer(
-                modifier = Modifier.height(4.dp)
-            )
-
-            Button(
-                onClick = onRequestLoan,
-                enabled = equipment.status == EquipmentStatus.AVAILABLE,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(54.dp)
-            ) {
+            if (loan.status == LoanStatus.PENDING) {
 
                 Text(
-                    text = if (
-                        equipment.status == EquipmentStatus.AVAILABLE
-                    ) {
-                        "Solicitar préstamo"
-                    } else {
-                        "Equipo no disponible"
-                    }
-                )
-            }
-
-            if (
-                equipment.status != EquipmentStatus.AVAILABLE
-            ) {
-
-                Text(
-                    text = "Este equipo no puede solicitarse mientras se encuentre ${equipment.status.label.lowercase()}.",
+                    text = "Solicitud pendiente. La cancelación desde Android aún no está habilitada en esta versión.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -192,7 +188,7 @@ fun EquipmentDetailContent(
 }
 
 @Composable
-private fun DetailRow(
+private fun LoanDetailRow(
     label: String,
     value: String
 ) {

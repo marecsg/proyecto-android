@@ -1,4 +1,4 @@
-package com.pe.presentation
+package com.pe.presentation.screens.auth
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -9,7 +9,6 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Science
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import com.pe.domain.model.Usuario
 import com.pe.presentation.viewmodel.AuthViewModel
 import com.pe.presentation.viewmodel.AuthState
 import androidx.compose.ui.Alignment
