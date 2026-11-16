@@ -1,3 +1,4 @@
+
 package com.pe.data.remote.mapper
 
 import com.pe.data.remote.dto.DetallePrestamoDto
@@ -18,9 +19,8 @@ fun PrestamoDto.toDomain(): Prestamo {
         nombreEncargadoAprobacion = nombreEncargadoAprobacion ?: "Pendiente",
         idEncargadoDevolucion = idEncargadoDevolucion,
         nombreEncargadoDevolucion = nombreEncargadoDevolucion,
-        fechaInicioUso = fechaInicioUso.orEmpty(),
-        fechaFinUso = fechaFinUso.orEmpty(),
-        comentarioAprobacion = comentarioAprobacion,
+        fechaInicioUso = fechaInicioUso,
+        fechaFinUso = fechaFinUso,
         estado = EstadoPrestamo.desdeTexto(estadoPrestamo),
         detalles = detalles.map { it.toDomain() }
     )
@@ -36,5 +36,4 @@ fun DetallePrestamoDto.toDomain(): DetallePrestamo {
         estadoFisicoAlDevolver = estadoFisicoAlDevolver,
         comentarioDevolucion = comentarioDevolucion
     )
-
 }

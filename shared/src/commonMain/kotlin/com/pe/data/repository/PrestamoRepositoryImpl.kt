@@ -1,3 +1,4 @@
+
 package com.pe.data.repository
 
 import com.pe.data.remote.api.ApiClient
@@ -30,9 +31,18 @@ class PrestamoRepositoryImpl(
 ) : PrestamoRepository {
 
     private val baseUrl = ApiClient.getBaseUrl()
-    private fun obtenerToken(): String = sessionManager.getToken().orEmpty()
 
-    override suspend fun obtenerPrestamoPorId(idPrestamo: Int): Result<Prestamo> {
+    private fun obtenerToken(): String {
+        return sessionManager.getToken()
+            ?.takeIf { it.isNotBlank() }
+            ?: throw IllegalStateException(
+                "Debes iniciar sesión para continuar"
+            )
+    }
+
+    override suspend fun obtenerPrestamoPorId(
+        idPrestamo: Int
+    ): Result<Prestamo> {
         return try {
             val response = client.get("$baseUrl/api/prestamos/$idPrestamo") {
                 contentType(ContentType.Application.Json)
@@ -51,7 +61,9 @@ class PrestamoRepositoryImpl(
         }
     }
 
-    override suspend fun obtenerPorEstudiante(idEstudiante: Int): Result<List<Prestamo>> {
+    override suspend fun obtenerPorEstudiante(
+        idEstudiante: Int
+    ): Result<List<Prestamo>> {
         return try {
             val response = client.get("$baseUrl/api/prestamos/estudiante/$idEstudiante") {
                 contentType(ContentType.Application.Json)
@@ -60,7 +72,9 @@ class PrestamoRepositoryImpl(
 
             if (response.status.isSuccess()) {
                 val dtos = response.body<List<PrestamoDto>>()
-                Result.success(dtos.map { it.toDomain() }.sortedByDescending { it.idPrestamo })
+                Result.success(
+                    dtos.map { it.toDomain() }.sortedByDescending { it.idPrestamo }
+                )
             } else {
                 val errorBody = response.bodyAsText()
                 Result.failure(Exception("Error al obtener préstamos del estudiante (${response.status.value}): $errorBody"))
@@ -70,7 +84,9 @@ class PrestamoRepositoryImpl(
         }
     }
 
-    override suspend fun obtenerPorAmbiente(idAmbiente: Int): Result<List<Prestamo>> {
+    override suspend fun obtenerPorAmbiente(
+        idAmbiente: Int
+    ): Result<List<Prestamo>> {
         return try {
             val response = client.get("$baseUrl/api/prestamos/ambiente/$idAmbiente") {
                 contentType(ContentType.Application.Json)
@@ -79,7 +95,9 @@ class PrestamoRepositoryImpl(
 
             if (response.status.isSuccess()) {
                 val dtos = response.body<List<PrestamoDto>>()
-                Result.success(dtos.map { it.toDomain() }.sortedByDescending { it.idPrestamo })
+                Result.success(
+                    dtos.map { it.toDomain() }.sortedByDescending { it.idPrestamo }
+                )
             } else {
                 val errorBody = response.bodyAsText()
                 Result.failure(Exception("Error al obtener préstamos del ambiente (${response.status.value}): $errorBody"))
@@ -89,17 +107,15 @@ class PrestamoRepositoryImpl(
         }
     }
 
-    //aprobar solicitud
+    // Aprobar solicitud y generar préstamo
     override suspend fun crearDesdeSolicitud(
         idSolicitud: Int,
-        idEncargadoAprobacion: Int,
-        comentarioAprobacion: String?
+        comentarioRespuesta: String?
     ): Result<Prestamo> {
         return try {
             val request = CrearPrestamoRequest(
                 idSolicitud = idSolicitud,
-                idEncargadoAprobacion = idEncargadoAprobacion,
-                comentarioAprobacion = comentarioAprobacion
+                comentarioRespuesta = comentarioRespuesta
             )
 
             val response = client.post("$baseUrl/api/prestamos/aprobar") {
@@ -120,7 +136,7 @@ class PrestamoRepositoryImpl(
         }
     }
 
-    //para rechazar o cancelar
+    // Iniciar o cancelar préstamo
     override suspend fun cambiarEstado(
         idPrestamo: Int,
         nuevoEstado: EstadoPrestamo
@@ -148,21 +164,20 @@ class PrestamoRepositoryImpl(
         }
     }
 
+    // Registrar devolución
     override suspend fun registrarDevolucion(
         idPrestamo: Int,
-        idEncargadoDevolucion: Int,
         estadoPrestamo: EstadoPrestamo,
         detallesDevolucion: List<DevolucionItem>
     ): Result<Prestamo> {
         return try {
             val request = ActualizarEstadoPrestamoRequest(
                 estadoPrestamo = estadoPrestamo.name,
-                idEncargadoDevolucion = idEncargadoDevolucion,
                 detallesDevolucion = detallesDevolucion.map { item ->
                     DetalleDevolucionRequest(
                         idDetalle = item.idDetalle,
                         estadoItem = item.estadoItem.name,
-                        estadoFisicoAlDevolver = item.estadoFisicoAlDevolver.name,
+                        estadoFisicoAlDevolver = item.estadoFisicoAlDevolver?.name,
                         comentarioDevolucion = item.comentarioDevolucion
                     )
                 }

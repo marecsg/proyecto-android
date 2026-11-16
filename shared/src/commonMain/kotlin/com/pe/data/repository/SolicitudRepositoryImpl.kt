@@ -133,11 +133,13 @@ class SolicitudRepositoryImpl(
     // 5. Cambiar estado de una solicitud
     override suspend fun cambiarEstado(
         idSolicitud: Int,
-        nuevoEstado: EstadoSolicitud
+        nuevoEstado: EstadoSolicitud,
+        comentarioRespuesta: String?
     ): Result<Solicitud> = ejecutar {
 
         val request = ActualizarEstadoSolicitudRequest(
-            estadoSolicitud = nuevoEstado.name
+            estadoSolicitud = nuevoEstado.name,
+            comentarioRespuesta = comentarioRespuesta
         )
 
         val response = client.patch(

@@ -5,17 +5,16 @@ import com.pe.domain.repository.PrestamoRepository
 
 class AprobarSolicitudPrestamoUseCase(private val repository: PrestamoRepository) {
 
-    suspend operator fun invoke(idSolicitud: Int, idEncargadoAprobacion: Int,
-        comentarioAprobacion: String? = null
+    suspend operator fun invoke(idSolicitud: Int, comentarioRespuesta: String? = null
+
 
     ): Result<Prestamo> {
 
-        val comentarioLimpio = comentarioAprobacion?.trim()?.takeIf { it.isNotEmpty() }
+        val comentarioLimpio = comentarioRespuesta?.trim()?.takeIf { it.isNotEmpty() }
 
         return repository.crearDesdeSolicitud(
             idSolicitud = idSolicitud,
-            idEncargadoAprobacion = idEncargadoAprobacion,
-            comentarioAprobacion = comentarioLimpio
+            comentarioRespuesta = comentarioLimpio
         )
     }
 }

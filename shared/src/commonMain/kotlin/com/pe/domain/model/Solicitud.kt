@@ -32,8 +32,47 @@ data class Solicitud(
     val fechaFinReserva: String,
     val fechaSolicitud: String,
     val estado: EstadoSolicitud,
-    val detalles: List<DetalleSolicitud>
+    val codigoEstudiante: String = "",
+    val fechaRespuesta: String? = null,
+    val comentarioRespuesta: String? = null,
+    val detalles: List<DetalleSolicitud> = emptyList()
 ) {
     val estaPendiente: Boolean
         get() = estado == EstadoSolicitud.PENDIENTE
+
+    val inicioReservaVisual: String
+        get() = formatearFechaHora(fechaInicioReserva)
+
+    val finReservaVisual: String
+        get() = formatearFechaHora(fechaFinReserva)
+
+    val fechaSolicitudVisual: String
+        get() = formatearFechaHora(fechaSolicitud)
+
+    val fechaRespuestaVisual: String
+        get() = formatearFechaHora(fechaRespuesta)
+
+    private fun formatearFechaHora(fechaIso: String?): String {
+        if (fechaIso.isNullOrBlank()) return "Desconocido"
+
+        val secciones = fechaIso.split("T")
+        if (secciones.size != 2) return fechaIso
+
+        val bloqueFecha = secciones[0].split("-")
+        val fechaFormateada = if (bloqueFecha.size == 3) {
+            "${bloqueFecha[2]}/${bloqueFecha[1]}/${bloqueFecha[0]}"
+        } else {
+            secciones[0]
+        }
+
+        val bloqueHora = secciones[1].split(":")
+        val hora24 = bloqueHora.getOrNull(0)?.toIntOrNull()
+            ?: return fechaFormateada
+
+        val minutos = bloqueHora.getOrNull(1)?.padStart(2, '0') ?: "00"
+        val hora12 = if (hora24 % 12 == 0) 12 else hora24 % 12
+        val turno = if (hora24 < 12) "AM" else "PM"
+
+        return "$fechaFormateada $hora12:$minutos $turno"
+    }
 }

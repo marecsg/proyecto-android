@@ -18,8 +18,6 @@ class ObtenerSolicitudesEstudianteUseCase(
             )
         }
 
-        return repository.obtenerPorEstudiante(
-            idEstudiante
-        )
+        return repository.obtenerPorEstudiante(idEstudiante)
     }
 }

@@ -5,17 +5,11 @@ import com.pe.domain.model.EstadoSolicitud
 
 interface SolicitudRepository {
 
-    suspend fun obtenerPorId(
-        idSolicitud: Int
-    ): Result<Solicitud>
+    suspend fun obtenerPorId(idSolicitud: Int): Result<Solicitud>
 
-    suspend fun obtenerPorEstudiante(
-        idEstudiante: Int
-    ): Result<List<Solicitud>>
+    suspend fun obtenerPorEstudiante(idEstudiante: Int): Result<List<Solicitud>>
 
-    suspend fun obtenerPorAmbiente(
-        idAmbiente: Int
-    ): Result<List<Solicitud>>
+    suspend fun obtenerPorAmbiente(idAmbiente: Int): Result<List<Solicitud>>
 
     suspend fun crearSolicitud(
         idEstudiante: Int,
@@ -28,6 +22,7 @@ interface SolicitudRepository {
 
     suspend fun cambiarEstado(
         idSolicitud: Int,
-        nuevoEstado: EstadoSolicitud
+        nuevoEstado: EstadoSolicitud,
+        comentarioRespuesta: String? = null
     ): Result<Solicitud>
 }

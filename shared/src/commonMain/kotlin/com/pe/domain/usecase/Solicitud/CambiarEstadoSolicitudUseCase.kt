@@ -9,7 +9,8 @@ class CambiarEstadoSolicitudUseCase(
 ) {
     suspend operator fun invoke(
         idSolicitud: Int,
-        nuevoEstado: EstadoSolicitud
+        nuevoEstado: EstadoSolicitud,
+        comentarioRespuesta: String? = null
     ): Result<Solicitud> {
 
         if (idSolicitud <= 0) {
@@ -20,9 +21,16 @@ class CambiarEstadoSolicitudUseCase(
             )
         }
 
+        val comentarioLimpio = comentarioRespuesta
+            ?.trim()
+            ?.takeIf { it.isNotEmpty() }
+
+
         return repository.cambiarEstado(
             idSolicitud = idSolicitud,
-            nuevoEstado = nuevoEstado
+            nuevoEstado = nuevoEstado,
+            comentarioRespuesta = comentarioLimpio
+
         )
     }
 }

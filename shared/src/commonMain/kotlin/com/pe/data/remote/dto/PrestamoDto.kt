@@ -1,3 +1,4 @@
+
 package com.pe.data.remote.dto
 
 import kotlinx.serialization.Serializable
@@ -15,7 +16,6 @@ data class PrestamoDto(
     val nombreEncargadoDevolucion: String? = null,
     val fechaInicioUso: String? = null,
     val fechaFinUso: String? = null,
-    val comentarioAprobacion: String? = null,
     val estadoPrestamo: String? = null,
     val detalles: List<DetallePrestamoDto> = emptyList()
 )
@@ -34,14 +34,12 @@ data class DetallePrestamoDto(
 @Serializable
 data class CrearPrestamoRequest(
     val idSolicitud: Int,
-    val idEncargadoAprobacion: Int,
-    val comentarioAprobacion: String? = null
+    val comentarioRespuesta: String? = null
 )
 
 @Serializable
 data class ActualizarEstadoPrestamoRequest(
     val estadoPrestamo: String,
-    val idEncargadoDevolucion: Int? = null,
     val detallesDevolucion: List<DetalleDevolucionRequest>? = null
 )
 
@@ -49,6 +47,6 @@ data class ActualizarEstadoPrestamoRequest(
 data class DetalleDevolucionRequest(
     val idDetalle: Int,
     val estadoItem: String,
-    val estadoFisicoAlDevolver: String,
+    val estadoFisicoAlDevolver: String? = null,
     val comentarioDevolucion: String? = null
 )

@@ -193,7 +193,8 @@ class SolicitudViewModel(
     // Actualizar estado de una solicitud
     fun cambiarEstado(
         idSolicitud: Int,
-        nuevoEstado: EstadoSolicitud
+        nuevoEstado: EstadoSolicitud,
+        comentarioRespuesta: String? = null
     ) {
         if (_uiState.value.processing) return
 
@@ -207,8 +208,9 @@ class SolicitudViewModel(
             }
 
             cambiarEstadoUseCase(
-                idSolicitud,
-                nuevoEstado
+                idSolicitud = idSolicitud,
+                nuevoEstado = nuevoEstado,
+                comentarioRespuesta = comentarioRespuesta
             )
                 .onSuccess { actualizada ->
                     _uiState.update { state ->

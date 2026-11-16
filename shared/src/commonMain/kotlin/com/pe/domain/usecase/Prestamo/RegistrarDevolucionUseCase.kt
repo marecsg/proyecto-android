@@ -11,7 +11,6 @@ import com.pe.domain.repository.PrestamoRepository.DevolucionItem
 class RegistrarDevolucionUseCase(private val repository: PrestamoRepository) {
     suspend operator fun invoke(
         prestamo: Prestamo,
-        idEncargadoDevolucion: Int,
         estadoCierre: EstadoPrestamo,
         itemsEvaluados: List<DevolucionItem>
     ): Result<Prestamo> {
@@ -27,7 +26,15 @@ class RegistrarDevolucionUseCase(private val repository: PrestamoRepository) {
 
             if (evaluado != null) {
                 evaluado.copy(
-                    comentarioDevolucion = evaluado.comentarioDevolucion?.trim()?.takeIf { it.isNotEmpty() }
+                    estadoFisicoAlDevolver =
+                        if (evaluado.estadoItem == EstadoItem.NO_DEVUELTO) {
+                            null
+                        } else {
+                            evaluado.estadoFisicoAlDevolver
+                        },
+                    comentarioDevolucion = evaluado.comentarioDevolucion
+                        ?.trim()
+                        ?.takeIf { it.isNotEmpty() }
                 )
             } else {
                 DevolucionItem(
@@ -41,7 +48,6 @@ class RegistrarDevolucionUseCase(private val repository: PrestamoRepository) {
 
         return repository.registrarDevolucion(
             idPrestamo = prestamo.idPrestamo,
-            idEncargadoDevolucion = idEncargadoDevolucion,
             estadoPrestamo = estadoCierre,
             detallesDevolucion = bloqueCompleto
         )

@@ -12,18 +12,12 @@ interface PrestamoRepository {
     suspend fun obtenerPorEstudiante(idEstudiante: Int): Result<List<Prestamo>>
     suspend fun obtenerPorAmbiente(idAmbiente: Int): Result<List<Prestamo>>
 
-    suspend fun crearDesdeSolicitud(
-        idSolicitud: Int,
-        idEncargadoAprobacion: Int,
-        comentarioAprobacion:
-        String? = null
-    ): Result<Prestamo>
+    suspend fun crearDesdeSolicitud(idSolicitud: Int, comentarioRespuesta: String? = null): Result<Prestamo>
 
     suspend fun cambiarEstado(idPrestamo: Int, nuevoEstado: EstadoPrestamo): Result<Prestamo>
 
     suspend fun registrarDevolucion(
         idPrestamo: Int,
-        idEncargadoDevolucion: Int,
         estadoPrestamo: EstadoPrestamo,
         detallesDevolucion: List<DevolucionItem>
     ): Result<Prestamo>
@@ -31,7 +25,7 @@ interface PrestamoRepository {
     data class DevolucionItem(
         val idDetalle: Int,
         val estadoItem: EstadoItem,
-        val estadoFisicoAlDevolver: EstadoFisicoEquipo,
+        val estadoFisicoAlDevolver: EstadoFisicoEquipo? = null,
         val comentarioDevolucion: String? = null
     )
 }

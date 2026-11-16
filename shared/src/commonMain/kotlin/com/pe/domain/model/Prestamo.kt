@@ -52,9 +52,8 @@ data class Prestamo(
     val nombreEncargadoAprobacion: String,
     val idEncargadoDevolucion: Int? = null,
     val nombreEncargadoDevolucion: String? = null,
-    val fechaInicioUso: String,
-    val fechaFinUso: String,
-    val comentarioAprobacion: String? = null,
+    val fechaInicioUso: String? = null,
+    val fechaFinUso: String? = null,
     val estado: EstadoPrestamo,
     val detalles: List<DetallePrestamo> = emptyList()
 ) {
@@ -70,15 +69,17 @@ data class Prestamo(
 
     val fechaVisual: String
         get() {
-            val partes = fechaInicioUso.substringBefore('T').split('-')
-            return if (partes.size == 3) "${partes[2]}/${partes[1]}/${partes[0]}" else fechaInicioUso
+            val partes = fechaInicioUso?.substringBefore('T')?.split('-')
+            return if (partes?.size == 3)
+                "${partes[2]}/${partes[1]}/${partes[0]}"
+            else fechaInicioUso ?: "--"
         }
 
     val horaInicio: String
-        get() = fechaInicioUso.substringAfter('T', "--:--").take(5)
+        get() = fechaInicioUso?.substringAfter('T', "--:--")?.take(5) ?: "--:--"
 
     val horaFin: String
-        get() = fechaFinUso.substringAfter('T', "--:--").take(5)
+        get() = fechaFinUso?.substringAfter('T', "--:--")?.take(5) ?: "--:--"
 
     val horarioPrestamo: String
         get() = "${formatearFechaHora(fechaInicioUso)} → ${formatearFechaHora(fechaFinUso)}"

@@ -23,12 +23,19 @@ class EquipoRepositoryImpl(
 
     private val baseUrl = ApiClient.getBaseUrl()
 
+    private fun obtenerToken(): String {
+        return sessionManager.getToken()
+            ?.takeIf { it.isNotBlank() }
+            ?: throw IllegalStateException(
+                "Debes iniciar sesión para continuar"
+            )
+    }
+
     override suspend fun obtenerEquipos(): Result<List<Equipo>> {
         return try {
-            val token = sessionManager.getToken().orEmpty()
             val response = client.get("$baseUrl/api/equipos") {
                 contentType(ContentType.Application.Json)
-                header(HttpHeaders.Authorization, "Bearer $token")
+                header(HttpHeaders.Authorization, "Bearer ${obtenerToken()}")
             }
 
             if (response.status.isSuccess()) {
@@ -45,10 +52,9 @@ class EquipoRepositoryImpl(
 
     override suspend fun obtenerEquipoPorId(idEquipo: Int): Result<Equipo> {
         return try {
-            val token = sessionManager.getToken().orEmpty()
             val response = client.get("$baseUrl/api/equipos/$idEquipo") {
                 contentType(ContentType.Application.Json)
-                header(HttpHeaders.Authorization, "Bearer $token")
+                header(HttpHeaders.Authorization, "Bearer ${obtenerToken()}")
             }
 
             if (response.status.isSuccess()) {
@@ -65,10 +71,9 @@ class EquipoRepositoryImpl(
 
     override suspend fun obtenerEquipoPorQr(codigoQr: String): Result<Equipo> {
         return try {
-            val token = sessionManager.getToken().orEmpty()
             val response = client.get("$baseUrl/api/equipos/qr/$codigoQr") {
                 contentType(ContentType.Application.Json)
-                header(HttpHeaders.Authorization, "Bearer $token")
+                header(HttpHeaders.Authorization, "Bearer ${obtenerToken()}")
             }
 
             if (response.status.isSuccess()) {

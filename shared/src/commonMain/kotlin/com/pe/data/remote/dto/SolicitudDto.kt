@@ -8,6 +8,7 @@ data class SolicitudDto(
     val idSolicitud: Int,
     val idEstudiante: Int,
     val nombreEstudiante: String,
+    val codigoEstudiante: String? = null,
     val idAmbiente: Int,
     val nombreAmbiente: String,
     val motivoSolicitud: String,
@@ -15,6 +16,8 @@ data class SolicitudDto(
     val fechaFinReserva: String,
     val fechaSolicitud: String,
     val estadoSolicitud: String,
+    val fechaRespuesta: String? = null,
+    val comentarioRespuesta: String? = null,
     val detalles: List<SolicitudDetalleDto> = emptyList()
 )
 
@@ -42,5 +45,6 @@ data class SolicitudEquipoRequest(
 
 @Serializable
 data class ActualizarEstadoSolicitudRequest(
-    val estadoSolicitud: String
+    val estadoSolicitud: String,
+    val comentarioRespuesta: String? = null
 )

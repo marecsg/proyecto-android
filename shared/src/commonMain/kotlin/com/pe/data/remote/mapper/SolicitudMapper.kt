@@ -1,4 +1,6 @@
+
 package com.pe.data.remote.mapper
+
 import com.pe.data.remote.dto.SolicitudDto
 import com.pe.data.remote.dto.SolicitudDetalleDto
 import com.pe.domain.model.Solicitud
@@ -10,12 +12,15 @@ fun SolicitudDto.toDomain(): Solicitud {
         idSolicitud = idSolicitud,
         idEstudiante = idEstudiante,
         nombreEstudiante = nombreEstudiante,
+        codigoEstudiante = codigoEstudiante.orEmpty(),
         idAmbiente = idAmbiente,
         nombreAmbiente = nombreAmbiente,
         motivoSolicitud = motivoSolicitud,
         fechaInicioReserva = fechaInicioReserva,
         fechaFinReserva = fechaFinReserva,
         fechaSolicitud = fechaSolicitud,
+        fechaRespuesta = fechaRespuesta,
+        comentarioRespuesta = comentarioRespuesta,
         estado = EstadoSolicitud.desdeTexto(estadoSolicitud),
         detalles = detalles.map { it.toDomain() }
     )
