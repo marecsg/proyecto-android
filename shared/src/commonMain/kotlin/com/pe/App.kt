@@ -154,7 +154,7 @@ fun App() {
                                             if (!usuario.esEncargado) {
                                                 Button(
                                                     modifier = Modifier
-                                                        .align(Alignment.BottomEnd)
+                                                        .align(Alignment.BottomStart)
                                                         .padding(16.dp),
                                                     onClick = { abrirFormulario() }
                                                 ) { Text("+ Nueva solicitud") }

@@ -210,19 +210,5 @@ fun SolicitudesContent(
                 }
             }
         }
-
-        if (!esEncargado) {
-            BotonPrincipal(
-                texto = "+ Nueva solicitud",
-                onClick = onNuevaSolicitud,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(
-                        start = 16.dp,
-                        end = 16.dp,
-                        bottom = 16.dp
-                    )
-            )
-        }
     }
 }
