@@ -175,7 +175,7 @@ fun PrestamoCard(
                 EstadoPrestamo.EN_CURSO,
                 EstadoPrestamo.VENCIDO -> {
                     Text(
-                        text = if (prestamo.fechaInicioUso.isNotBlank()) {
+                        text = if (prestamo.fechaInicioUso.isNullOrBlank()) {
                             "Inicio real: ${prestamo.fechaVisual} · " +
                                     prestamo.horaInicio
                         } else {

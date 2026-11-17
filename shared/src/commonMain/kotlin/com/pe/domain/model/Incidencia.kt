@@ -7,7 +7,7 @@ enum class IncidentStatus(val label: String) {
 }
 
 data class IncidentDraft(
-    val equipment: Equipment,
+    val equipment: Equipo,
     val type: String,
     val description: String,
     val date: String
@@ -15,7 +15,7 @@ data class IncidentDraft(
 
 data class Incident(
     val id: String,
-    val equipment: Equipment,
+    val equipment: Equipo,
     val reporter: String,
     val type: String,
     val description: String,

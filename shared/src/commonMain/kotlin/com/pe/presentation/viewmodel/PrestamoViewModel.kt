@@ -97,7 +97,7 @@
         fun aprobar(
             usuario: Usuario,
             idSolicitud: Int,
-            comentarioAprobacion: String? = null,
+            comentarioRespuesta: String? = null,
             onApproved: (Prestamo) -> Unit = {}
         ) {
             if (_uiState.value.processing) return
@@ -107,7 +107,7 @@
 
                 aprobarSolicitud(
                     idSolicitud = idSolicitud,
-                    comentarioRespuesta  = comentarioAprobacion
+                    comentarioRespuesta = comentarioRespuesta
                 ).onSuccess { nuevoPrestamo ->
                     _uiState.update { state ->
                         state.copy(

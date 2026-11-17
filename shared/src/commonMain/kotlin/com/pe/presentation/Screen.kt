@@ -4,21 +4,21 @@ sealed class Screen {
 
     object Splash : Screen()
 
-    object Welcome : Screen()
+    object Login : Screen()
 
     object Home : Screen()
 
-    object EquipmentDetail : Screen()
+    // EQUIPOS
+    object DetalleEquipo : Screen()
 
-    object LoanRequest : Screen()
+    // SOLICITUDES
+    object CrearSolicitud : Screen()
+    object SeleccionEquipos : Screen()
+    object DetalleSolicitud : Screen()
 
-    object LoanConfirmation : Screen()
+    // PRÉSTAMOS
+    object DetallePrestamo : Screen()
 
-    object LoanDetail : Screen()
-
-    object IncidentReport : Screen()
-
-    object IncidentDetail : Screen()
-
+    // PERFIL
     object ProfileUpdate : Screen()
 }

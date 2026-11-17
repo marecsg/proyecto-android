@@ -14,6 +14,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 import com.pe.domain.model.Solicitud
+import com.pe.presentation.components.BotonPrincipal
 import com.pe.presentation.components.SolicitudCard
 import com.pe.presentation.theme.*
 
@@ -26,6 +27,7 @@ fun SolicitudesContent(
     modifier: Modifier = Modifier,
     codigosPorEstudiante: Map<Int, String> = emptyMap(),
     cargando: Boolean = false,
+    onNuevaSolicitud: () -> Unit = {},
     error: String? = null
 ) {
 
@@ -207,6 +209,20 @@ fun SolicitudesContent(
                     }
                 }
             }
+        }
+
+        if (!esEncargado) {
+            BotonPrincipal(
+                texto = "+ Nueva solicitud",
+                onClick = onNuevaSolicitud,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        bottom = 16.dp
+                    )
+            )
         }
     }
 }

@@ -1,4 +1,3 @@
-
 package com.pe.presentation.screens.solicitudes
 
 import androidx.compose.foundation.BorderStroke
@@ -20,8 +19,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.pe.domain.model.Solicitud
 import com.pe.domain.model.EstadoSolicitud
+import com.pe.domain.model.Solicitud
 import com.pe.presentation.components.BadgeEstado
 import com.pe.presentation.components.numeroVisual
 import com.pe.presentation.components.toTono
@@ -35,142 +34,51 @@ fun DetalleSolicitudContent(
     esEncargado: Boolean,
     onBack: () -> Unit,
     onCancelar: (Int) -> Unit,
-    onAprobar: (Int) -> Unit,
+    onAprobar: (Int, String?) -> Unit,
     onRechazar: (Int, String?) -> Unit,
     onVerPrestamo: (Int) -> Unit,
     onVolverASolicitar: () -> Unit,
     modifier: Modifier = Modifier,
     procesando: Boolean = false
 ) {
-
     val pendiente = solicitud.estado == EstadoSolicitud.PENDIENTE
+    var confirmarCancelar by remember(solicitud.idSolicitud) { mutableStateOf(false) }
+    var confirmarAprobar by remember(solicitud.idSolicitud) { mutableStateOf(false) }
+    var confirmarRechazar by remember(solicitud.idSolicitud) { mutableStateOf(false) }
+    var textoAprobacion by remember(solicitud.idSolicitud) { mutableStateOf("") }
+    var textoRechazo by remember(solicitud.idSolicitud) { mutableStateOf("") }
 
-    var mostrarConfirmacionCancelar by remember {
-        mutableStateOf(false)
-    }
-
-    var mostrarConfirmacionAprobar by remember {
-        mutableStateOf(false)
-    }
-
-    var mostrarDialogoRechazo by remember {
-        mutableStateOf(false)
-    }
-
-    var comentarioRechazo by remember {
-        mutableStateOf("")
-    }
-
-    // CONFIRMACIÓN PARA CANCELAR
-    if (mostrarConfirmacionCancelar) {
+    if (confirmarCancelar) {
         AlertDialog(
-            onDismissRequest = {
-                mostrarConfirmacionCancelar = false
-            },
-            title = {
-                Text("Cancelar solicitud")
-            },
-            text = {
-                Text(
-                    "¿Estás seguro de que deseas cancelar " +
-                            "esta solicitud?"
-                )
-            },
+            onDismissRequest = { confirmarCancelar = false },
+            title = { Text("Cancelar solicitud") },
+            text = { Text("¿Seguro que deseas cancelar esta solicitud?") },
             confirmButton = {
                 TextButton(
+                    enabled = !procesando,
                     onClick = {
-                        mostrarConfirmacionCancelar = false
+                        confirmarCancelar = false
                         onCancelar(solicitud.idSolicitud)
-                    },
-                    enabled = !procesando
-                ) {
-                    Text(
-                        text = "Sí, cancelar",
-                        color = ErrorText
-                    )
-                }
+                    }
+                ) { Text("Sí, cancelar", color = ErrorText) }
             },
             dismissButton = {
-                TextButton(
-                    onClick = {
-                        mostrarConfirmacionCancelar = false
-                    }
-                ) {
-                    Text("Volver")
-                }
+                TextButton(onClick = { confirmarCancelar = false }) { Text("Volver") }
             }
         )
     }
 
-    // CONFIRMACIÓN PARA APROBAR
-    if (mostrarConfirmacionAprobar) {
+    if (confirmarAprobar) {
         AlertDialog(
-            onDismissRequest = {
-                mostrarConfirmacionAprobar = false
-            },
-            title = {
-                Text("Aprobar solicitud")
-            },
+            onDismissRequest = { confirmarAprobar = false },
+            title = { Text("Aprobar solicitud") },
             text = {
-                Text(
-                    "¿Deseas aprobar esta solicitud y " +
-                            "generar el préstamo pendiente?"
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        mostrarConfirmacionAprobar = false
-                        onAprobar(solicitud.idSolicitud)
-                    },
-                    enabled = !procesando
-                ) {
-                    Text("Aprobar")
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        mostrarConfirmacionAprobar = false
-                    }
-                ) {
-                    Text("Volver")
-                }
-            }
-        )
-    }
-
-    // RECHAZO CON COMENTARIO OPCIONAL
-    if (mostrarDialogoRechazo) {
-        AlertDialog(
-            onDismissRequest = {
-                mostrarDialogoRechazo = false
-            },
-            title = {
-                Text("Rechazar solicitud")
-            },
-            text = {
-                Column(
-                    verticalArrangement =
-                        Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        "Puedes escribir un motivo de rechazo."
-                    )
-
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text("¿Deseas aprobar esta solicitud y generar el préstamo pendiente?")
                     OutlinedTextField(
-                        value = comentarioRechazo,
-                        onValueChange = {
-                            comentarioRechazo = it
-                        },
-                        label = {
-                            Text("Comentario (opcional)")
-                        },
-                        placeholder = {
-                            Text(
-                                "Ej. Equipo en mantenimiento"
-                            )
-                        },
+                        value = textoAprobacion,
+                        onValueChange = { textoAprobacion = it },
+                        label = { Text("Comentario (opcional)") },
                         modifier = Modifier.fillMaxWidth(),
                         minLines = 2,
                         maxLines = 4
@@ -179,575 +87,297 @@ fun DetalleSolicitudContent(
             },
             confirmButton = {
                 TextButton(
+                    enabled = !procesando,
                     onClick = {
-                        mostrarDialogoRechazo = false
-
-                        onRechazar(
+                        confirmarAprobar = false
+                        onAprobar(
                             solicitud.idSolicitud,
-                            comentarioRechazo
-                                .trim()
-                                .ifBlank { null }
+                            textoAprobacion.trim().ifBlank { null }
                         )
-                    },
-                    enabled = !procesando
-                ) {
-                    Text(
-                        text = "Rechazar",
-                        color = ErrorText
-                    )
-                }
+                    }
+                ) { Text("Aprobar") }
             },
             dismissButton = {
-                TextButton(
-                    onClick = {
-                        mostrarDialogoRechazo = false
-                    }
-                ) {
-                    Text("Volver")
-                }
+                TextButton(onClick = { confirmarAprobar = false }) { Text("Volver") }
             }
         )
     }
 
+    if (confirmarRechazar) {
+        AlertDialog(
+            onDismissRequest = { confirmarRechazar = false },
+            title = { Text("Rechazar solicitud") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text("Puedes indicar el motivo del rechazo.")
+                    OutlinedTextField(
+                        value = textoRechazo,
+                        onValueChange = { textoRechazo = it },
+                        label = { Text("Comentario (opcional)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 2,
+                        maxLines = 4
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = !procesando,
+                    onClick = {
+                        confirmarRechazar = false
+                        onRechazar(
+                            solicitud.idSolicitud,
+                            textoRechazo.trim().ifBlank { null }
+                        )
+                    }
+                ) { Text("Rechazar", color = ErrorText) }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmarRechazar = false }) { Text("Volver") }
+            }
+        )
+    }
+
+    val mostrarAcciones = pendiente ||
+        solicitud.estado == EstadoSolicitud.APROBADA ||
+        (solicitud.estado == EstadoSolicitud.RECHAZADA && !esEncargado)
+
     Scaffold(
         modifier = modifier,
         containerColor = BackgroundClean,
-
-        // CABECERA
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        text = "Detalle de la solicitud",
-                        style =
-                            MaterialTheme.typography.titleMedium
-                    )
-                },
+                title = { Text("Detalle de la solicitud") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector =
-                                Icons.Default.ArrowBack,
-                            contentDescription = "Volver"
-                        )
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
                     }
                 },
-                colors =
-                    TopAppBarDefaults.topAppBarColors(
-                        containerColor = BackgroundClean
-                    )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = BackgroundClean)
             )
         },
-
-        // BOTONES SEGÚN ROL Y ESTADO
         bottomBar = {
-
-            val mostrarAcciones =
-                pendiente ||
-                        solicitud.estado == EstadoSolicitud.APROBADA ||
-                        (
-                                solicitud.estado ==
-                                        EstadoSolicitud.RECHAZADA &&
-                                        !esEncargado
-                                )
-
             if (mostrarAcciones) {
-                Surface(
-                    color = SurfaceWhite,
-                    shadowElevation = 4.dp
-                ) {
+                Surface(color = SurfaceWhite, shadowElevation = 4.dp) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .navigationBarsPadding()
-                            .padding(16.dp),
-                        horizontalArrangement =
-                            Arrangement.spacedBy(10.dp)
+                        modifier = Modifier.fillMaxWidth()
+                            .navigationBarsPadding().padding(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-
                         when (solicitud.estado) {
-
                             EstadoSolicitud.PENDIENTE -> {
-
                                 if (esEncargado) {
-
                                     OutlinedButton(
-                                        onClick = {
-                                            comentarioRechazo = ""
-                                            mostrarDialogoRechazo =
-                                                true
-                                        },
+                                        onClick = { confirmarRechazar = true },
                                         enabled = !procesando,
-                                        modifier =
-                                            Modifier.weight(1f),
-                                        shape =
-                                            RoundedCornerShape(12.dp),
-                                        border = BorderStroke(
-                                            1.dp,
-                                            ErrorBorder
-                                        ),
-                                        colors =
-                                            ButtonDefaults
-                                                .outlinedButtonColors(
-                                                    contentColor =
-                                                        ErrorText
-                                                )
-                                    ) {
-                                        Text("Rechazar")
-                                    }
-
+                                        modifier = Modifier.weight(1f),
+                                        border = BorderStroke(1.dp, ErrorBorder)
+                                    ) { Text("Rechazar", color = ErrorText) }
                                     Button(
-                                        onClick = {
-                                            mostrarConfirmacionAprobar =
-                                                true
-                                        },
+                                        onClick = { confirmarAprobar = true },
                                         enabled = !procesando,
-                                        modifier =
-                                            Modifier.weight(1f),
-                                        shape =
-                                            RoundedCornerShape(12.dp)
-                                    ) {
-                                        Text("Aprobar")
-                                    }
-
+                                        modifier = Modifier.weight(1f)
+                                    ) { Text("Aprobar") }
                                 } else {
-
                                     OutlinedButton(
-                                        onClick = {
-                                            mostrarConfirmacionCancelar =
-                                                true
-                                        },
+                                        onClick = { confirmarCancelar = true },
                                         enabled = !procesando,
-                                        modifier =
-                                            Modifier.fillMaxWidth(),
-                                        shape =
-                                            RoundedCornerShape(12.dp),
-                                        border = BorderStroke(
-                                            1.dp,
-                                            ErrorBorder
-                                        ),
-                                        colors =
-                                            ButtonDefaults
-                                                .outlinedButtonColors(
-                                                    contentColor =
-                                                        ErrorText
-                                                )
-                                    ) {
-                                        Text("Cancelar solicitud")
-                                    }
+                                        modifier = Modifier.fillMaxWidth(),
+                                        border = BorderStroke(1.dp, ErrorBorder)
+                                    ) { Text("Cancelar solicitud", color = ErrorText) }
                                 }
                             }
-
                             EstadoSolicitud.APROBADA -> {
                                 Button(
-                                    onClick = {
-                                        onVerPrestamo(
-                                            solicitud.idSolicitud
-                                        )
-                                    },
+                                    onClick = { onVerPrestamo(solicitud.idSolicitud) },
                                     enabled = !procesando,
-                                    modifier =
-                                        Modifier.fillMaxWidth(),
-                                    shape =
-                                        RoundedCornerShape(12.dp)
-                                ) {
-                                    Text("Ver préstamo")
-                                }
+                                    modifier = Modifier.fillMaxWidth()
+                                ) { Text("Ver préstamo") }
                             }
-
                             EstadoSolicitud.RECHAZADA -> {
                                 if (!esEncargado) {
                                     Button(
-                                        onClick =
-                                            onVolverASolicitar,
+                                        onClick = onVolverASolicitar,
                                         enabled = !procesando,
-                                        modifier =
-                                            Modifier.fillMaxWidth(),
-                                        shape =
-                                            RoundedCornerShape(12.dp)
-                                    ) {
-                                        Text("Volver a solicitar")
-                                    }
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) { Text("Volver a solicitar") }
                                 }
                             }
-
                             EstadoSolicitud.CANCELADA -> Unit
                         }
                     }
                 }
             }
         }
-    ) { paddingValues ->
-
+    ) { padding ->
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
+            modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(16.dp),
-            verticalArrangement =
-                Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-
-            // INFORMACIÓN DEL ESTUDIANTE SOLO ENCARGADO
             if (esEncargado) {
                 item {
                     TarjetaDetalleSolicitud {
                         Row(
-                            verticalAlignment =
-                                Alignment.CenterVertically,
-                            horizontalArrangement =
-                                Arrangement.spacedBy(12.dp)
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-
                             Box(
-                                modifier = Modifier
-                                    .size(44.dp)
-                                    .background(
-                                        PrimaryContainer,
-                                        CircleShape
-                                    ),
-                                contentAlignment =
-                                    Alignment.Center
+                                modifier = Modifier.size(44.dp)
+                                    .background(PrimaryContainer, CircleShape),
+                                contentAlignment = Alignment.Center
                             ) {
-                                Icon(
-                                    imageVector =
-                                        Icons.Default.Person,
-                                    contentDescription = null,
-                                    tint = Primary
-                                )
+                                Icon(Icons.Default.Person, contentDescription = null, tint = Primary)
                             }
-
                             Column {
-                                Text(
-                                    text =
-                                        solicitud.nombreEstudiante,
-                                    style =
-                                        MaterialTheme.typography
-                                            .titleMedium,
-                                    color = TextDark
-                                )
-
-                                Text(
-                                    text = "Cód. " +
-                                            solicitud.codigoEstudiante
-                                                .ifBlank {
-                                                    "Desconocido"
-                                                },
-                                    style =
-                                        MaterialTheme.typography
-                                            .labelSmall,
-                                    color = TextMuted
-                                )
+                                Text(solicitud.nombreEstudiante, color = TextDark,
+                                    style = MaterialTheme.typography.titleMedium)
+                                if (solicitud.codigoEstudiante.isNotBlank()) {
+                                    Text("Cód. ${solicitud.codigoEstudiante}", color = TextMuted,
+                                        style = MaterialTheme.typography.labelSmall)
+                                }
                             }
                         }
                     }
                 }
             }
 
-            // RESUMEN DE LA SOLICITUD
             item {
-                TarjetaDetalleSolicitud {
-                    Column(
-                        verticalArrangement =
-                            Arrangement.spacedBy(12.dp)
-                    ) {
-
-                        Row(
-                            modifier =
-                                Modifier.fillMaxWidth(),
-                            horizontalArrangement =
-                                Arrangement.SpaceBetween,
-                            verticalAlignment =
-                                Alignment.CenterVertically
-                        ) {
-
-                            Column {
-                                Text(
-                                    text = "Solicitud N.º ${
-                                        numeroVisual(numero)
-                                    }",
-                                    style =
-                                        MaterialTheme.typography
-                                            .labelSmall,
-                                    color = TextMuted
-                                )
-
-                                Text(
-                                    text =
-                                        "${solicitud.detalles.size} " +
-                                                if (
-                                                    solicitud.detalles.size == 1
-                                                ) "equipo" else "equipos",
-                                    style =
-                                        MaterialTheme.typography
-                                            .titleLarge,
-                                    color = TextDark
-                                )
-                            }
-
-                            BadgeEstado(
-                                label =
-                                    solicitud.estado.etiqueta,
-                                tone =
-                                    solicitud.estado.toTono()
-                            )
-                        }
-
-                        Row(
-                            horizontalArrangement =
-                                Arrangement.spacedBy(8.dp)
-                        ) {
-
-                            FechaDetalleSolicitud(
-                                titulo = "Retiro previsto",
-                                fecha =
-                                    solicitud.inicioReservaVisual,
-                                modifier =
-                                    Modifier.weight(1f)
-                            )
-
-                            FechaDetalleSolicitud(
-                                titulo = "Devolución prevista",
-                                fecha =
-                                    solicitud.finReservaVisual,
-                                modifier =
-                                    Modifier.weight(1f)
-                            )
-                        }
-
-                        Text(
-                            text = "Enviada: ${
-                                solicitud.fechaSolicitudVisual
-                            }",
-                            style =
-                                MaterialTheme.typography.labelSmall,
-                            color = TextMuted
-                        )
-                    }
-                }
-            }
-
-            // COMENTARIO DE RECHAZO
-            // NUNCA APARECE EN CANCELADA
-            if (
-                solicitud.estado ==
-                EstadoSolicitud.RECHAZADA &&
-                !solicitud.comentarioRechazo.isNullOrBlank()
-            ) {
-                item {
-                    Card(
-                        modifier =
-                            Modifier.fillMaxWidth(),
-                        shape =
-                            RoundedCornerShape(16.dp),
-                        colors =
-                            CardDefaults.cardColors(
-                                containerColor =
-                                    ErrorContainer
-                            ),
-                        border = BorderStroke(
-                            1.dp,
-                            ErrorBorder
-                        )
-                    ) {
-                        Column(
-                            modifier =
-                                Modifier.padding(16.dp),
-                            verticalArrangement =
-                                Arrangement.spacedBy(6.dp)
-                        ) {
-
-                            Text(
-                                text =
-                                    "Respuesta del encargado",
-                                style =
-                                    MaterialTheme.typography
-                                        .labelMedium,
-                                color = ErrorText,
-                                fontWeight =
-                                    FontWeight.SemiBold
-                            )
-
-                            Text(
-                                text =
-                                    solicitud.comentarioRechazo
-                                        .orEmpty(),
-                                style =
-                                    MaterialTheme.typography
-                                        .bodyMedium,
-                                color = TextBody
-                            )
-                        }
-                    }
-                }
-            }
-
-            // EQUIPOS
-            item {
-                TarjetaDetalleSolicitud {
-                    Text(
-                        text = "Equipos (" +
-                                solicitud.detalles.size + ")",
-                        style =
-                            MaterialTheme.typography.titleMedium,
-                        color = TextDark
-                    )
-                }
-            }
-
-            // MISMO DISEÑO PARA UNO O VARIOS
-            items(
-                items = solicitud.detalles,
-                key = { it.idEquipo }
-            ) { equipo ->
-
                 TarjetaDetalleSolicitud {
                     Row(
-                        verticalAlignment =
-                            Alignment.CenterVertically,
-                        horizontalArrangement =
-                            Arrangement.spacedBy(12.dp)
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-
-                        Box(
-                            modifier = Modifier
-                                .size(42.dp)
-                                .background(
-                                    PrimarySoft,
-                                    RoundedCornerShape(12.dp)
-                                ),
-                            contentAlignment =
-                                Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector =
-                                    Icons.Default.Devices,
-                                contentDescription = null,
-                                tint = Primary
-                            )
+                        Column {
+                            Text("Solicitud N.º ${numeroVisual(numero)}", color = TextMuted,
+                                style = MaterialTheme.typography.labelSmall)
+                            Text("${solicitud.detalles.size} equipo(s)", color = TextDark,
+                                style = MaterialTheme.typography.titleLarge)
                         }
+                        BadgeEstado(
+                            label = solicitud.estado.etiqueta,
+                            tone = solicitud.estado.toTono()
+                        )
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FechaDetalleSolicitud(
+                            "Retiro previsto", solicitud.inicioReservaVisual,
+                            Modifier.weight(1f)
+                        )
+                        FechaDetalleSolicitud(
+                            "Devolución prevista", solicitud.finReservaVisual,
+                            Modifier.weight(1f)
+                        )
+                    }
+                    Text("Enviada: ${solicitud.fechaSolicitudVisual}", color = TextMuted,
+                        style = MaterialTheme.typography.labelSmall)
+                    if (solicitud.fechaRespuesta != null) {
+                        Text("Respondida: ${solicitud.fechaRespuestaVisual}", color = TextMuted,
+                            style = MaterialTheme.typography.labelSmall)
+                    }
+                }
+            }
 
+            // El comentario ya pertenece a Solicitud, incluso cuando fue aprobada.
+            if (!solicitud.comentarioRespuesta.isNullOrBlank()) {
+                item {
+                    val rechazo = solicitud.estado == EstadoSolicitud.RECHAZADA
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (rechazo) ErrorContainer else SurfaceWhite
+                        ),
+                        border = BorderStroke(1.dp, if (rechazo) ErrorBorder else Border)
+                    ) {
                         Column(
-                            modifier =
-                                Modifier.weight(1f),
-                            verticalArrangement =
-                                Arrangement.spacedBy(4.dp)
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-
                             Text(
-                                text = equipo.nombreEquipo,
-                                style =
-                                    MaterialTheme.typography
-                                        .bodyMedium,
-                                color = TextDark
+                                when (solicitud.estado) {
+                                    EstadoSolicitud.APROBADA -> "Comentario de aprobación"
+                                    EstadoSolicitud.RECHAZADA -> "Motivo del rechazo"
+                                    EstadoSolicitud.CANCELADA -> "Comentario de cancelación"
+                                    EstadoSolicitud.PENDIENTE -> "Comentario"
+                                },
+                                fontWeight = FontWeight.SemiBold,
+                                color = if (rechazo) ErrorText else TextDark
                             )
-
-                            Text(
-                                text = equipo.codigoQrEquipo,
-                                style =
-                                    MaterialTheme.typography
-                                        .labelSmall,
-                                color = TextMuted
-                            )
+                            Text(solicitud.comentarioRespuesta.orEmpty(), color = TextBody)
                         }
                     }
                 }
             }
 
-            // MOTIVO
             item {
                 TarjetaDetalleSolicitud {
-                    Column(
-                        verticalArrangement =
-                            Arrangement.spacedBy(6.dp)
+                    Text("Equipos (${solicitud.detalles.size})",
+                        style = MaterialTheme.typography.titleMedium, color = TextDark)
+                }
+            }
+            items(solicitud.detalles, key = { it.idEquipo }) { equipo ->
+                TarjetaDetalleSolicitud {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-
-                        Text(
-                            text = "Motivo",
-                            style =
-                                MaterialTheme.typography
-                                    .labelSmall,
-                            color = TextMuted
-                        )
-
-                        Text(
-                            text = solicitud.motivoSolicitud,
-                            style =
-                                MaterialTheme.typography
-                                    .bodyMedium,
-                            color = TextBody
-                        )
+                        Box(
+                            modifier = Modifier.size(42.dp)
+                                .background(PrimarySoft, RoundedCornerShape(12.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.Devices, contentDescription = null, tint = Primary)
+                        }
+                        Column {
+                            Text(equipo.nombreEquipo, color = TextDark)
+                            Text(equipo.codigoQrEquipo,
+                                color = TextMuted, style = MaterialTheme.typography.labelSmall)
+                        }
                     }
                 }
             }
 
-            // SEGUIMIENTO
             item {
                 TarjetaDetalleSolicitud {
-                    Column(
-                        verticalArrangement =
-                            Arrangement.spacedBy(14.dp)
-                    ) {
+                    Text("Motivo", color = TextMuted,
+                        style = MaterialTheme.typography.labelSmall)
+                    Text(solicitud.motivoSolicitud, color = TextBody)
+                }
+            }
 
-                        Text(
-                            text = "Seguimiento",
-                            style =
-                                MaterialTheme.typography
-                                    .titleMedium,
-                            color = TextDark
+            item {
+                TarjetaDetalleSolicitud {
+                    Text("Seguimiento", color = TextDark,
+                        style = MaterialTheme.typography.titleMedium)
+                    EventoSolicitud(
+                        titulo = "Solicitud enviada",
+                        descripcion = solicitud.fechaSolicitudVisual,
+                        completado = true
+                    )
+                    when (solicitud.estado) {
+                        EstadoSolicitud.PENDIENTE -> EventoSolicitud(
+                            "En revisión", "Esperando la respuesta del encargado", false
                         )
-
-                        EventoSolicitud(
-                            titulo = "Solicitud enviada",
-                            descripcion =
-                                solicitud.fechaSolicitudVisual,
-                            completado = true
+                        EstadoSolicitud.APROBADA -> EventoSolicitud(
+                            "Solicitud aprobada",
+                            if (solicitud.fechaRespuesta != null)
+                                solicitud.fechaRespuestaVisual else "Aprobada por el encargado",
+                            true
                         )
-
-                        when (solicitud.estado) {
-
-                            EstadoSolicitud.PENDIENTE -> {
-                                EventoSolicitud(
-                                    titulo = "En revisión",
-                                    descripcion =
-                                        "Esperando la respuesta " +
-                                                "del encargado",
-                                    completado = false
-                                )
-                            }
-
-                            EstadoSolicitud.APROBADA -> {
-                                EventoSolicitud(
-                                    titulo =
-                                        "Solicitud aprobada",
-                                    descripcion =
-                                        "Aprobada por el encargado",
-                                    completado = true
-                                )
-                            }
-
-                            EstadoSolicitud.RECHAZADA -> {
-                                EventoSolicitud(
-                                    titulo =
-                                        "Solicitud rechazada",
-                                    descripcion =
-                                        "Rechazada por el encargado",
-                                    completado = true,
-                                    esError = true
-                                )
-                            }
-
-                            EstadoSolicitud.CANCELADA -> {
-                                EventoSolicitud(
-                                    titulo =
-                                        "Solicitud cancelada",
-                                    descripcion =
-                                        "Cancelada por el estudiante",
-                                    completado = true,
-                                    esError = true
-                                )
-                            }
-                        }
+                        EstadoSolicitud.RECHAZADA -> EventoSolicitud(
+                            "Solicitud rechazada",
+                            if (solicitud.fechaRespuesta != null)
+                                solicitud.fechaRespuestaVisual else "Rechazada por el encargado",
+                            true, esError = true
+                        )
+                        EstadoSolicitud.CANCELADA -> EventoSolicitud(
+                            "Solicitud cancelada",
+                            if (solicitud.fechaRespuesta != null)
+                                solicitud.fechaRespuestaVisual else "Cancelada por el estudiante",
+                            true, esError = true
+                        )
                     }
                 }
             }
@@ -755,7 +385,6 @@ fun DetalleSolicitudContent(
     }
 }
 
-// TARJETA BASE
 @Composable
 private fun TarjetaDetalleSolicitud(
     contenido: @Composable ColumnScope.() -> Unit
@@ -763,69 +392,37 @@ private fun TarjetaDetalleSolicitud(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = SurfaceWhite
-        ),
+        colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
         border = BorderStroke(1.dp, Border)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
             content = contenido
         )
     }
 }
 
-// FECHA DEL RESUMEN
 @Composable
 private fun FechaDetalleSolicitud(
     titulo: String,
     fecha: String,
     modifier: Modifier = Modifier
 ) {
-
     val partes = fecha.split(" ", limit = 2)
-
     Column(
-        modifier = modifier
-            .background(
-                BackgroundClean,
-                RoundedCornerShape(12.dp)
-            )
+        modifier = modifier.background(BackgroundClean, RoundedCornerShape(12.dp))
             .padding(12.dp),
-        verticalArrangement =
-            Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-
-        Text(
-            text = titulo,
-            style =
-                MaterialTheme.typography.labelSmall,
-            color = TextMuted
-        )
-
-        Text(
-            text = partes.firstOrNull()
-                ?.takeIf { it.isNotBlank() }
-                ?: "Desconocido",
-            style =
-                MaterialTheme.typography.bodyMedium,
-            color = TextDark
-        )
-
+        Text(titulo, color = TextMuted, style = MaterialTheme.typography.labelSmall)
+        Text(partes.firstOrNull().orEmpty().ifBlank { "Desconocido" }, color = TextDark)
         if (partes.size > 1) {
-            Text(
-                text = partes[1],
-                style =
-                    MaterialTheme.typography.labelSmall,
-                color = TextBody
-            )
+            Text(partes[1], color = TextBody, style = MaterialTheme.typography.labelSmall)
         }
     }
 }
 
-// EVENTOS DEL SEGUIMIENTO
 @Composable
 private fun EventoSolicitud(
     titulo: String,
@@ -833,19 +430,13 @@ private fun EventoSolicitud(
     completado: Boolean,
     esError: Boolean = false
 ) {
-
     Row(
-        horizontalArrangement =
-            Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.Top
     ) {
-
         Icon(
-            imageVector = if (completado) {
-                Icons.Default.CheckCircle
-            } else {
-                Icons.Default.RadioButtonUnchecked
-            },
+            imageVector = if (completado) Icons.Default.CheckCircle
+                else Icons.Default.RadioButtonUnchecked,
             contentDescription = null,
             tint = when {
                 esError -> ErrorText
@@ -854,25 +445,10 @@ private fun EventoSolicitud(
             },
             modifier = Modifier.size(20.dp)
         )
-
-        Column(
-            verticalArrangement =
-                Arrangement.spacedBy(4.dp)
-        ) {
-
-            Text(
-                text = titulo,
-                style =
-                    MaterialTheme.typography.bodyMedium,
-                color = TextDark
-            )
-
-            Text(
-                text = descripcion,
-                style =
-                    MaterialTheme.typography.labelSmall,
-                color = TextMuted
-            )
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(titulo, color = TextDark, style = MaterialTheme.typography.bodyMedium)
+            Text(descripcion, color = TextMuted,
+                style = MaterialTheme.typography.labelSmall)
         }
     }
 }
