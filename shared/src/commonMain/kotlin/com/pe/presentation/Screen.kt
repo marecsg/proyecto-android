@@ -1,3 +1,4 @@
+
 package com.pe.presentation
 
 sealed class Screen {
@@ -18,6 +19,7 @@ sealed class Screen {
 
     // PRÉSTAMOS
     object DetallePrestamo : Screen()
+    object RegistrarDevolucion : Screen()
 
     // PERFIL
     object ProfileUpdate : Screen()
