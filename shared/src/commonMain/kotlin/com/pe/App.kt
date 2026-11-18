@@ -59,6 +59,18 @@ fun App() {
             }
         }
 
+        fun abrirDevolucion(idPrestamo: Int) {
+            if (usuario?.esEncargado != true) return
+
+            idPrestamoDetalle = idPrestamo
+
+            prestamoViewModel.clearError()
+            prestamoViewModel.clearSuccess()
+            prestamoViewModel.cargarDetalle(idPrestamo)
+
+            pantalla = Screen.RegistrarDevolucion
+        }
+
         LaunchedEffect(pantalla, usuario?.idUsuario) {
             if (pantalla == Screen.Home && usuario != null) cargarListas()
         }
@@ -69,6 +81,25 @@ fun App() {
                 pestana = 1
                 pantalla = Screen.Home
                 solicitudViewModel.clearSuccess()
+            }
+        }
+
+        LaunchedEffect(
+            prestamoState.successMessage,
+            pantalla
+        ) {
+            if (
+                pantalla == Screen.RegistrarDevolucion &&
+                prestamoState.successMessage ==
+                "Devolución registrada con éxito"
+            ) {
+                prestamoViewModel.clearSuccess()
+
+                idPrestamoDetalle?.let { id ->
+                    prestamoViewModel.cargarDetalle(id)
+                }
+
+                pantalla = Screen.DetallePrestamo
             }
         }
 
@@ -143,8 +174,8 @@ fun App() {
                                                 onIniciarPrestamo = { id ->
                                                     prestamoViewModel.cambiarEstado(id, EstadoPrestamo.EN_CURSO)
                                                 },
-                                                onRegistrarDevolucion = {
-                                                    aviso = "La pantalla de devolución será integrada por Marec."
+                                                onRegistrarDevolucion = { idPrestamo ->
+                                                    abrirDevolucion(idPrestamo)
                                                 },
                                                 cargandoSolicitudes = solicitudState.loading,
                                                 cargandoPrestamos = prestamoState.loading,
@@ -308,11 +339,72 @@ fun App() {
                                 onIniciarPrestamo = {
                                     prestamoViewModel.cambiarEstado(it, EstadoPrestamo.EN_CURSO)
                                 },
-                                onRegistrarDevolucion = {
-                                    aviso = "Pantalla de devolución pendiente de Marec."
+                                onRegistrarDevolucion = { idPrestamo ->
+                                    abrirDevolucion(idPrestamo)
                                 },
                                 procesando = prestamoState.processing,
                                 error = prestamoState.errorMessage
+                            )
+                        }
+                    }
+
+                    Screen.RegistrarDevolucion -> {
+
+                        val prestamo = prestamoState.prestamoSeleccionado
+                            ?.takeIf { it.idPrestamo == idPrestamoDetalle }
+                            ?: prestamoState.prestamos.firstOrNull {
+                                it.idPrestamo == idPrestamoDetalle
+                            }
+
+                        if (prestamo == null) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (prestamoState.errorMessage != null) {
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Text(
+                                            prestamoState.errorMessage.orEmpty()
+                                        )
+
+                                        TextButton(
+                                            onClick = {
+                                                pantalla = Screen.DetallePrestamo
+                                            }
+                                        ) {
+                                            Text("Volver")
+                                        }
+                                    }
+                                } else {
+                                    CircularProgressIndicator()
+                                }
+                            }
+                        } else {
+                            RegistrarDevolucionContent(
+                                prestamo = prestamo,
+
+                                procesando = prestamoState.processing,
+
+                                error = prestamoState.errorMessage,
+
+                                onVolver = {
+                                    pantalla = Screen.DetallePrestamo
+                                },
+
+                                onConfirmar = { itemsEvaluados ->
+                                    val u = usuario
+
+                                    if (u != null && u.esEncargado) {
+                                        prestamoViewModel.confirmarDevolucion(
+                                            usuario = u,
+                                            prestamo = prestamo,
+                                            estadoCierre = EstadoPrestamo.FINALIZADO,
+                                            itemsEvaluados = itemsEvaluados
+                                        )
+                                    }
+                                }
                             )
                         }
                     }
