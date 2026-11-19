@@ -22,6 +22,10 @@ sealed class Screen {
     object DetallePrestamo : Screen()
     object RegistrarDevolucion : Screen()
 
+    // INCIDENCIAS - NUEVAS RUTAS
+    object ReportarIncidencia : Screen()
+    object DetalleIncidencia : Screen()
+
     // PERFIL
     object ProfileUpdate : Screen()
 }
