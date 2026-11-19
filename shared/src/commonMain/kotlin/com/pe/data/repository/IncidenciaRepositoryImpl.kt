@@ -175,4 +175,23 @@ class IncidenciaRepositoryImpl(
             Result.failure(e)
         }
     }
+
+    // 3. Consultar incidencias de un estudiante
+    override suspend fun obtenerPorEstudiante(
+        idEstudiante: Int
+    ): Result<List<Incidencia>> = ejecutar {
+
+        val response = client.get(
+            "$baseUrl/api/incidencias/estudiante/$idEstudiante"
+        ) {
+            header(
+                HttpHeaders.Authorization,
+                "Bearer ${obtenerToken()}"
+            )
+        }
+
+        response.body<List<TicketIncidenciaDto>>()
+            .map { it.toDomain() }
+    }
+
 }
