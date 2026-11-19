@@ -11,6 +11,7 @@ sealed class Screen {
 
     // EQUIPOS
     object DetalleEquipo : Screen()
+    object EscanearQr : Screen()
 
     // SOLICITUDES
     object CrearSolicitud : Screen()

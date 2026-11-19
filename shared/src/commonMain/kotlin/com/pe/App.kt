@@ -18,8 +18,22 @@ import com.pe.presentation.viewmodel.*
 import org.koin.compose.KoinApplication
 import org.koin.compose.viewmodel.koinViewModel
 
+enum class OrigenEscaneoQr {
+    CONSULTAR_EQUIPO,
+    AGREGAR_A_SOLICITUD
+}
+
+data class LecturaQr(
+    val codigo: String,
+    val origen: OrigenEscaneoQr
+)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun App() {
+fun App(
+    onAbrirEscanerQr: (OrigenEscaneoQr) -> Unit = {},
+    lecturaQr: LecturaQr? = null,
+    onQrConsumido: () -> Unit = {}
+) {
     KoinApplication(application = { modules(appModule) }) {
         val authViewModel = koinViewModel<AuthViewModel>()
         val equipoViewModel = koinViewModel<EquipoViewModel>()
@@ -39,6 +53,29 @@ fun App() {
         var idPrestamoDetalle by remember { mutableStateOf<Int?>(null) }
         var idsSeleccionados by remember { mutableStateOf<Set<Int>>(emptySet()) }
         var aviso by remember { mutableStateOf<String?>(null) }
+        var mostrarFichaQr by remember {
+            mutableStateOf(false)
+        }
+
+        var origenQrActual by remember {
+            mutableStateOf(OrigenEscaneoQr.CONSULTAR_EQUIPO)
+        }
+
+        var equiposEscaneados by remember {
+            mutableStateOf<List<Equipo>>(emptyList())
+        }
+
+        LaunchedEffect(lecturaQr) {
+            if (lecturaQr != null) {
+                origenQrActual = lecturaQr.origen
+                mostrarFichaQr = true
+
+                equipoViewModel.limpiarSeleccion()
+                equipoViewModel.buscarPorQr(lecturaQr.codigo)
+
+                onQrConsumido()
+            }
+        }
 
         fun abrirFormulario(ids: Set<Int> = emptySet()) {
             idsSeleccionados = ids
@@ -140,7 +177,9 @@ fun App() {
                                 },
                                 onEditProfile = { pantalla = Screen.ProfileUpdate },
                                 onScanQr = {
-                                    aviso = "El lector QR se conectará al integrar el escáner."
+                                    onAbrirEscanerQr(
+                                        OrigenEscaneoQr.CONSULTAR_EQUIPO
+                                    )
                                 }
                             ) {
                                 Box(modifier = Modifier.fillMaxSize()) {
@@ -232,14 +271,24 @@ fun App() {
                     }
 
                     Screen.CrearSolicitud -> {
-                        val seleccionados = equipoState.equipos.filter { it.idEquipo in idsSeleccionados }
+                        val equiposDisponibles = (
+                                equiposEscaneados + equipoState.equipos
+                                ).distinctBy { it.idEquipo }
+
+                        val seleccionados = equiposDisponibles.filter {
+                            it.idEquipo in idsSeleccionados
+                        }
                         CrearSolicitudContent(
                             equiposSeleccionados = seleccionados,
                             procesando = solicitudState.processing,
                             error = solicitudState.errorMessage,
                             onVolver = { pantalla = Screen.Home },
                             onElegirDeLista = { pantalla = Screen.SeleccionEquipos },
-                            onEscanearQr = { aviso = "El lector QR aún no está conectado." },
+                            onEscanearQr = {
+                                onAbrirEscanerQr(
+                                    OrigenEscaneoQr.AGREGAR_A_SOLICITUD
+                                )
+                            },
                             onQuitarEquipo = { id -> idsSeleccionados = idsSeleccionados - id },
                             onEnviarSolicitud = { inicio, fin, motivo ->
                                 val u = usuario
@@ -418,6 +467,113 @@ fun App() {
                         TextButton(onClick = { pantalla = Screen.Home }) {
                             Text("Volver al inicio")
                         }
+                    }
+                }
+            }
+        }
+        if (mostrarFichaQr) {
+            ModalBottomSheet(
+                onDismissRequest = {
+                    mostrarFichaQr = false
+                    equipoViewModel.limpiarSeleccion()
+                }
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    when {
+                        equipoState.loading -> {
+                            CircularProgressIndicator()
+                            Text("Buscando equipo...")
+                        }
+
+                        equipoState.errorMessage != null -> {
+                            Text(
+                                "No se encontró el equipo",
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Text(
+                                equipoState.errorMessage.orEmpty()
+                            )
+                        }
+
+                        equipoState.equipoSeleccionado != null -> {
+                            val equipo = equipoState.equipoSeleccionado!!
+
+                            Text(
+                                "Equipo escaneado",
+                                color = MaterialTheme.colorScheme.primary
+                            )
+
+                            Text(
+                                equipo.nombre,
+                                style = MaterialTheme.typography.titleLarge
+                            )
+
+                            HorizontalDivider()
+
+                            Text("Código: ${equipo.codigoQr}")
+                            Text("Ubicación: ${equipo.nombreAmbiente}")
+                            Text("Estado: ${equipo.disponibilidad.etiqueta}")
+
+                            val equiposActuales =
+                                equiposEscaneados + equipoState.equipos
+
+                            val mismoAmbiente = idsSeleccionados.all { id ->
+                                equiposActuales
+                                    .firstOrNull { it.idEquipo == id }
+                                    ?.idAmbiente == equipo.idAmbiente
+                            }
+
+                            if (
+                                origenQrActual ==
+                                OrigenEscaneoQr.AGREGAR_A_SOLICITUD
+                            ) {
+                                Button(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    enabled = equipo.estaDisponible &&
+                                            mismoAmbiente,
+                                    onClick = {
+                                        equiposEscaneados =
+                                            (equiposEscaneados + equipo)
+                                                .distinctBy { it.idEquipo }
+
+                                        idsSeleccionados =
+                                            idsSeleccionados + equipo.idEquipo
+
+                                        mostrarFichaQr = false
+                                        equipoViewModel.limpiarSeleccion()
+                                    }
+                                ) {
+                                    Text("+ Agregar a la solicitud")
+                                }
+
+                                if (!equipo.estaDisponible) {
+                                    Text("Este equipo no está disponible.")
+                                } else if (!mismoAmbiente) {
+                                    Text(
+                                        "Los equipos deben pertenecer al mismo ambiente."
+                                    )
+                                }
+                            }
+                        }
+
+                        else -> {
+                            Text("Consultando información del equipo...")
+                        }
+                    }
+
+                    TextButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            mostrarFichaQr = false
+                            equipoViewModel.limpiarSeleccion()
+                        }
+                    ) {
+                        Text("Cerrar")
                     }
                 }
             }

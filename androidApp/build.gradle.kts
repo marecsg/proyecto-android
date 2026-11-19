@@ -15,8 +15,26 @@ kotlin {
 dependencies {
     implementation(project(":shared"))
 
+    // Compose
     implementation(libs.androidx.activity.compose)
+    implementation(compose.runtime)
+    implementation(compose.foundation)
+    implementation(compose.material3)
+    implementation(compose.ui)
+    implementation(compose.materialIconsExtended)
+    implementation(libs.androidx.lifecycle.runtimeCompose)
+    implementation(libs.androidx.core.ktx)
 
+    // CameraX
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+
+    // ML Kit
+    implementation(libs.mlkit.barcode.scanning)
+
+    // Herramientas
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)
 }
