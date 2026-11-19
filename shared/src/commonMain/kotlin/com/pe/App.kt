@@ -20,6 +20,7 @@ import org.koin.compose.viewmodel.koinViewModel
 
 import com.pe.presentation.screens.solicitudes.*
 import com.pe.presentation.screens.incidencias.*
+import com.pe.presentation.screens.historial.HistoryContent
 
 @Composable
 fun App() {
@@ -29,12 +30,14 @@ fun App() {
         val solicitudViewModel = koinViewModel<SolicitudViewModel>()
         val prestamoViewModel = koinViewModel<PrestamoViewModel>()
         val incidenciaViewModel = koinViewModel<IncidenciaViewModel>()
+        val historialViewModel = koinViewModel<HistorialViewModel>()
 
         val auth by authViewModel.state.collectAsState()
         val equipoState by equipoViewModel.uiState.collectAsState()
         val solicitudState by solicitudViewModel.uiState.collectAsState()
         val prestamoState by prestamoViewModel.uiState.collectAsState()
         val incidenciaState by incidenciaViewModel.uiState.collectAsState()
+        val historialState by historialViewModel.uiState.collectAsState()
         val usuario = (auth as? AuthState.Success)?.usuario
 
         var pantalla by remember { mutableStateOf<Screen>(Screen.Splash) }
@@ -111,6 +114,23 @@ fun App() {
             }
         }
 
+        // CARGAR HISTORIAL AL ABRIR LA PESTAÑA 3
+        LaunchedEffect(
+            pantalla,
+            pestana,
+            usuario?.idUsuario,
+            usuario?.rol
+        ) {
+            val u = usuario
+
+            if (
+                pantalla == Screen.Home &&
+                pestana == 3 &&
+                u != null
+            ) {
+                historialViewModel.cargarHistorial(u)
+            }
+        }
 
         LaunchedEffect(
             prestamoState.successMessage,
@@ -180,6 +200,7 @@ fun App() {
                                     equipoViewModel.clear()
                                     solicitudViewModel.clear()
                                     prestamoViewModel.clear()
+                                    historialViewModel.limpiar()
                                     incidenciaViewModel.clear()
                                     idIncidenciaDetalle = null
                                     idsSeleccionados = emptySet()
@@ -269,13 +290,13 @@ fun App() {
                                             }
                                         )
 
-
-                                        3 -> Box(
-                                            modifier = Modifier.fillMaxSize(),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text("Historial en desarrollo")
-                                        }
+                                        3 -> HistoryContent(
+                                            estado = historialState,
+                                            esEncargado = usuario.esEncargado,
+                                            onRecargar = {
+                                                historialViewModel.cargarHistorial(usuario)
+                                            }
+                                        )
 
                                     }
                                     if (aviso != null) {

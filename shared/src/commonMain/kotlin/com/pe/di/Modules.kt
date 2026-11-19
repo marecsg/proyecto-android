@@ -12,6 +12,7 @@ import com.pe.domain.usecase.Equipos.ObtenerEquiposUseCase
 
 import com.pe.domain.usecase.Prestamo.*
 import com.pe.domain.usecase.Solicitud.*
+import com.pe.domain.usecase.Historial.*
 
 import com.pe.presentation.viewmodel.*
 
@@ -72,6 +73,10 @@ val appModule = module {
     factory { ObtenerSolicitudesAmbienteUseCase(get()) }
     factory { CambiarEstadoSolicitudUseCase(get()) }
 
+    // USE CASES - HISTORIAL
+    factory { ObtenerHistorialEstudianteUseCase(get()) }
+    factory { ObtenerHistorialEncargadoUseCase(get()) }
+
     // VIEWMODELS
     viewModel {
         AuthViewModel(get())
@@ -98,5 +103,15 @@ val appModule = module {
     // NUEVO: VIEWMODEL DE INCIDENCIAS
     viewModel {
         IncidenciaViewModel(get())
+    }
+
+    // VIEWMODEL DE HISTORIAL
+    viewModel {
+        HistorialViewModel(get(), get())
+    }
+
+    // REPOSITORY DE HISTORIAL
+    single<HistorialRepository> {
+        HistorialRepositoryImpl(get(), get())
     }
 }
