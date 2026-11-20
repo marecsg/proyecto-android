@@ -13,6 +13,9 @@ import com.pe.domain.usecase.Equipos.ObtenerEquiposUseCase
 import com.pe.domain.usecase.Prestamo.*
 import com.pe.domain.usecase.Solicitud.*
 import com.pe.domain.usecase.Historial.*
+import com.pe.domain.usecase.Notificaciones.GetNotificationSettingsUseCase
+import com.pe.domain.usecase.Notificaciones.SendTestNotificationUseCase
+import com.pe.domain.usecase.Notificaciones.SetNotificationEnabledUseCase
 
 import com.pe.presentation.viewmodel.*
 
@@ -114,4 +117,16 @@ val appModule = module {
     single<HistorialRepository> {
         HistorialRepositoryImpl(get(), get())
     }
+
+    //notif
+    single<NotificationRepository>{ NotificationRepositoryImpl(get(),get()) }
+
+    factory { GetNotificationSettingsUseCase(get()) }
+    factory { SetNotificationEnabledUseCase(get()) }
+    factory { SendTestNotificationUseCase(get()) }
+
+    viewModel {
+        NotificationSettingsViewModel(get(), get(), get())
+    }
+
 }

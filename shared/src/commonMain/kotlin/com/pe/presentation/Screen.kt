@@ -28,4 +28,6 @@ sealed class Screen {
 
     // PERFIL
     object ProfileUpdate : Screen()
+
+    object NotificationSetting: Screen()
 }
