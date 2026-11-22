@@ -13,7 +13,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.pe.notifications.AndroidLocalNotificationPlatform
 import com.pe.qr.QrScannerScreen
 
+import com.google.firebase.messaging.FirebaseMessaging
+import android.util.Log
+
 class MainActivity : ComponentActivity() {
+    private var fcmToken by mutableStateOf<String?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -21,6 +25,14 @@ class MainActivity : ComponentActivity() {
 
         val notificationPlatform =
             AndroidLocalNotificationPlatform(applicationContext)
+        FirebaseMessaging.getInstance().token
+            .addOnSuccessListener { token ->
+                fcmToken = token
+                Log.d("LabManagerFCM", "Token FCM obtenido correctamente")
+            }
+            .addOnFailureListener { error ->
+                Log.e("LabManagerFCM", "Error obteniendo token FCM", error)
+            }
 
         setContent {
 
@@ -37,6 +49,7 @@ class MainActivity : ComponentActivity() {
                 // ÚNICA llamada a App
                 App(
                     notificationPlatform = notificationPlatform,
+                    fcmToken = fcmToken,
 
                     onAbrirEscanerQr = { origen ->
                         lecturaQr = null

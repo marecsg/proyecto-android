@@ -42,7 +42,8 @@ fun App(
     onAbrirEscanerQr: (OrigenEscaneoQr) -> Unit = {},
     lecturaQr: LecturaQr? = null,
     onQrConsumido: () -> Unit = {},
-    notificationPlatform: LocalNotificationPlatform = UnsupportedLocalNotificationPlatform
+    notificationPlatform: LocalNotificationPlatform = UnsupportedLocalNotificationPlatform,
+    fcmToken: String? = null
 ) {
     val notificationModule = remember(notificationPlatform){
         module { single<LocalNotificationPlatform>{notificationPlatform} }
@@ -64,6 +65,11 @@ fun App(
         val incidenciaState by incidenciaViewModel.uiState.collectAsState()
         val historialState by historialViewModel.uiState.collectAsState()
         val usuario = (auth as? AuthState.Success)?.usuario
+        LaunchedEffect(usuario?.idUsuario, fcmToken) {
+            if (usuario != null && !fcmToken.isNullOrBlank()) {
+                authViewModel.registrarTokenFcm(fcmToken)
+            }
+        }
 
         var pantalla by remember { mutableStateOf<Screen>(Screen.Splash) }
         var pestana by remember { mutableIntStateOf(0) }

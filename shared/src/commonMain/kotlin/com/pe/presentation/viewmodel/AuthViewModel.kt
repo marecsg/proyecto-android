@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+import com.pe.domain.usecase.Notificaciones.RegistrarFcmTokenUseCase
+
 sealed class AuthState {
     data object Idle : AuthState()
     data object Loading : AuthState()
@@ -17,7 +19,8 @@ sealed class AuthState {
 }
 
 class AuthViewModel(
-    private val loginUseCase: LoginUseCase
+    private val loginUseCase: LoginUseCase,
+    private val registrarFcmTokenUseCase: RegistrarFcmTokenUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<AuthState>(AuthState.Idle)
@@ -40,6 +43,25 @@ class AuthViewModel(
                     _state.value = AuthState.Error(
                         e.message ?: "Error desconocido al iniciar sesión"
                     )
+                }
+        }
+    }
+
+
+    fun registrarTokenFcm(token: String) {
+
+        if (token.isBlank()) return
+
+        // Registrar únicamente cuando el login fue exitoso
+        if (_state.value !is AuthState.Success) return
+
+        viewModelScope.launch {
+            registrarFcmTokenUseCase(token)
+                .onSuccess {
+                    println("FCM registrado correctamente")
+                }
+                .onFailure { error ->
+                    println("Error registrando FCM: ${error.message}")
                 }
         }
     }

@@ -19,6 +19,8 @@ import com.pe.domain.usecase.Notificaciones.SetNotificationEnabledUseCase
 
 import com.pe.presentation.viewmodel.*
 
+import com.pe.domain.usecase.Notificaciones.RegistrarFcmTokenUseCase
+
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 import pe.edu.upeu.data.local.SessionManager
@@ -82,7 +84,7 @@ val appModule = module {
 
     // VIEWMODELS
     viewModel {
-        AuthViewModel(get())
+        AuthViewModel(get(), get())
     }
 
     viewModel {
@@ -128,5 +130,11 @@ val appModule = module {
     viewModel {
         NotificationSettingsViewModel(get(), get(), get())
     }
+
+    single<FcmTokenRepository> {
+        FcmTokenRepositoryImpl(get(), get())
+    }
+
+    factory { RegistrarFcmTokenUseCase(get()) }
 
 }
