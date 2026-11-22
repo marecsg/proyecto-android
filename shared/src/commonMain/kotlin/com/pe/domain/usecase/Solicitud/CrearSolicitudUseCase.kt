@@ -12,7 +12,8 @@ class CrearSolicitudUseCase(
         motivoSolicitud: String,
         fechaInicioReserva: String,
         fechaFinReserva: String,
-        idsEquipos: List<Int>
+        idsEquipos: List<Int>,
+        aceptoTerminos: Boolean
     ): Result<Solicitud> {
 
         if (idsEquipos.isEmpty()) {
@@ -31,13 +32,22 @@ class CrearSolicitudUseCase(
             )
         }
 
+        if (!aceptoTerminos) {
+            return Result.failure(
+                IllegalArgumentException(
+                    "Debes aceptar los términos y condiciones"
+                )
+            )
+        }
+
         return repository.crearSolicitud(
             idEstudiante = idEstudiante,
             idAmbiente = idAmbiente,
             motivoSolicitud = motivoSolicitud.trim(),
             fechaInicioReserva = fechaInicioReserva,
             fechaFinReserva = fechaFinReserva,
-            idsEquipos = idsEquipos
+            idsEquipos = idsEquipos,
+            aceptoTerminos = aceptoTerminos
         )
     }
 }

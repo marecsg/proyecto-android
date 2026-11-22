@@ -32,13 +32,16 @@ fun CrearSolicitudContent(
     onElegirDeLista: () -> Unit,
     onEscanearQr: () -> Unit,
     onQuitarEquipo: (Int) -> Unit,
-    onEnviarSolicitud: (String, String, String) -> Unit
+    onEnviarSolicitud: (String, String, String, Boolean) -> Unit
 ) {
     var fechaInicio by remember { mutableStateOf("") }
     var fechaFin by remember { mutableStateOf("") }
     var horaInicio by remember { mutableStateOf("") }
     var horaFin by remember { mutableStateOf("") }
     var motivo by remember { mutableStateOf("") }
+    var aceptoTerminos by remember {
+        mutableStateOf(false)
+    }
 
     var mostrarOpciones by remember { mutableStateOf(false) }
     var seleccionandoFecha by remember { mutableStateOf<Boolean?>(null) }
@@ -141,7 +144,10 @@ fun CrearSolicitudContent(
         equiposSeleccionados.map { it.idAmbiente }.distinct().size == 1
 
     val formularioValido =
-        equiposValidos && fechasValidas && motivo.isNotBlank()
+        equiposValidos &&
+                fechasValidas &&
+                motivo.isNotBlank() &&
+                aceptoTerminos
 
     Scaffold(
         containerColor = BackgroundClean,
@@ -177,7 +183,8 @@ fun CrearSolicitudContent(
                             onEnviarSolicitud(
                                 inicio,
                                 fin,
-                                motivo.trim()
+                                motivo.trim(),
+                                aceptoTerminos
                             )
                         }
                     }
@@ -371,6 +378,21 @@ fun CrearSolicitudContent(
                 maxLines = 5,
                 shape = RoundedCornerShape(12.dp)
             )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Checkbox(
+                    checked = aceptoTerminos,
+                    onCheckedChange = { aceptoTerminos = it }
+                )
+
+                Text(
+                    text = "He leído y acepto los términos y condiciones del préstamo de equipos.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
 
             if (error != null) {
                 Text(

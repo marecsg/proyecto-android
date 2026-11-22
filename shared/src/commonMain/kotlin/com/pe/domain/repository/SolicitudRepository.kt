@@ -17,7 +17,8 @@ interface SolicitudRepository {
         motivoSolicitud: String,
         fechaInicioReserva: String,
         fechaFinReserva: String,
-        idsEquipos: List<Int>
+        idsEquipos: List<Int>,
+        aceptoTerminos: Boolean
     ): Result<Solicitud>
 
     suspend fun cambiarEstado(

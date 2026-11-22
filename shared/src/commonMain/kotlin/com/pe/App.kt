@@ -6,6 +6,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.pe.data.notification.LocalNotificationPlatform
+import com.pe.data.notification.UnsupportedLocalNotificationPlatform
+import com.pe.presentation.NotificationSettingsContent
+import com.pe.presentation.viewmodel.NotificationSettingsViewModel
+
 import com.pe.di.appModule
 import com.pe.domain.model.*
 import com.pe.presentation.Screen
@@ -18,18 +23,46 @@ import com.pe.presentation.viewmodel.*
 import org.koin.compose.KoinApplication
 import org.koin.compose.viewmodel.koinViewModel
 
+import com.pe.presentation.screens.incidencias.*
+import com.pe.presentation.screens.historial.HistoryContent
+import org.koin.dsl.module
+
+enum class OrigenEscaneoQr {
+    CONSULTAR_EQUIPO,
+    AGREGAR_A_SOLICITUD
+}
+
+data class LecturaQr(
+    val codigo: String,
+    val origen: OrigenEscaneoQr
+)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun App() {
-    KoinApplication(application = { modules(appModule) }) {
+fun App(
+    onAbrirEscanerQr: (OrigenEscaneoQr) -> Unit = {},
+    lecturaQr: LecturaQr? = null,
+    onQrConsumido: () -> Unit = {},
+    notificationPlatform: LocalNotificationPlatform = UnsupportedLocalNotificationPlatform
+) {
+    val notificationModule = remember(notificationPlatform){
+        module { single<LocalNotificationPlatform>{notificationPlatform} }
+    }
+
+    KoinApplication(application = { modules(appModule,notificationModule) }) {
         val authViewModel = koinViewModel<AuthViewModel>()
         val equipoViewModel = koinViewModel<EquipoViewModel>()
         val solicitudViewModel = koinViewModel<SolicitudViewModel>()
         val prestamoViewModel = koinViewModel<PrestamoViewModel>()
+        val incidenciaViewModel = koinViewModel<IncidenciaViewModel>()
+        val historialViewModel = koinViewModel<HistorialViewModel>()
 
+        val notificationSettingsViewModel = koinViewModel<NotificationSettingsViewModel>()
         val auth by authViewModel.state.collectAsState()
         val equipoState by equipoViewModel.uiState.collectAsState()
         val solicitudState by solicitudViewModel.uiState.collectAsState()
         val prestamoState by prestamoViewModel.uiState.collectAsState()
+        val incidenciaState by incidenciaViewModel.uiState.collectAsState()
+        val historialState by historialViewModel.uiState.collectAsState()
         val usuario = (auth as? AuthState.Success)?.usuario
 
         var pantalla by remember { mutableStateOf<Screen>(Screen.Splash) }
@@ -37,8 +70,34 @@ fun App() {
         var idEquipoDetalle by remember { mutableStateOf<Int?>(null) }
         var idSolicitudDetalle by remember { mutableStateOf<Int?>(null) }
         var idPrestamoDetalle by remember { mutableStateOf<Int?>(null) }
+        var idIncidenciaDetalle by remember {
+            mutableStateOf<Int?>(null)
+        }
         var idsSeleccionados by remember { mutableStateOf<Set<Int>>(emptySet()) }
         var aviso by remember { mutableStateOf<String?>(null) }
+        var mostrarFichaQr by remember {
+            mutableStateOf(false)
+        }
+
+        var origenQrActual by remember {
+            mutableStateOf(OrigenEscaneoQr.CONSULTAR_EQUIPO)
+        }
+
+        var equiposEscaneados by remember {
+            mutableStateOf<List<Equipo>>(emptyList())
+        }
+
+        LaunchedEffect(lecturaQr) {
+            if (lecturaQr != null) {
+                origenQrActual = lecturaQr.origen
+                mostrarFichaQr = true
+
+                equipoViewModel.limpiarSeleccion()
+                equipoViewModel.buscarPorQr(lecturaQr.codigo)
+
+                onQrConsumido()
+            }
+        }
 
         fun abrirFormulario(ids: Set<Int> = emptySet()) {
             idsSeleccionados = ids
@@ -79,8 +138,45 @@ fun App() {
             if (pantalla == Screen.CrearSolicitud && solicitudState.successMessage != null) {
                 idsSeleccionados = emptySet()
                 pestana = 1
+
                 pantalla = Screen.Home
                 solicitudViewModel.clearSuccess()
+            }
+        }
+
+        LaunchedEffect(pantalla, pestana, usuario?.idUsuario) {
+            val u = usuario
+
+            if (
+                pantalla == Screen.Home &&
+                pestana == 2 &&
+                u != null
+            ) {
+                if (u.esEncargado) {
+                    // Incidencias del laboratorio
+                    incidenciaViewModel.loadManager(u)
+                } else {
+                    // Incidencias reportadas por el estudiante
+                    incidenciaViewModel.loadStudent(u)
+                }
+            }
+        }
+
+        // CARGAR HISTORIAL AL ABRIR LA PESTAÑA 3
+        LaunchedEffect(
+            pantalla,
+            pestana,
+            usuario?.idUsuario,
+            usuario?.rol
+        ) {
+            val u = usuario
+
+            if (
+                pantalla == Screen.Home &&
+                pestana == 3 &&
+                u != null
+            ) {
+                historialViewModel.cargarHistorial(u)
             }
         }
 
@@ -103,6 +199,23 @@ fun App() {
             }
         }
 
+        LaunchedEffect(
+            incidenciaState.successMessage,
+            pantalla
+        ) {
+            if (
+                pantalla == Screen.ReportarIncidencia &&
+                incidenciaState.successMessage ==
+                "Incidencia registrada correctamente"
+            ) {
+                incidenciaState.ultimaCreada?.let { creada ->
+                    idIncidenciaDetalle = creada.idTicket
+                    incidenciaViewModel.clearSuccess()
+                    pantalla = Screen.DetalleIncidencia
+                }
+            }
+        }
+
         AppTheme {
             Surface(modifier = Modifier.fillMaxSize()) {
                 when (pantalla) {
@@ -120,6 +233,15 @@ fun App() {
                         }
                     )
 
+                    Screen.NotificationSetting -> {
+                        NotificationSettingsContent(
+                            viewModel = notificationSettingsViewModel,
+                            onBack = {
+                                pantalla = Screen.Home
+                            }
+                        )
+                    }
+
                     Screen.Home -> {
                         if (usuario == null) {
                             WelcomeContent(
@@ -135,12 +257,20 @@ fun App() {
                                     equipoViewModel.clear()
                                     solicitudViewModel.clear()
                                     prestamoViewModel.clear()
+                                    historialViewModel.limpiar()
+                                    incidenciaViewModel.clear()
+                                    idIncidenciaDetalle = null
                                     idsSeleccionados = emptySet()
                                     pantalla = Screen.Login
                                 },
-                                onEditProfile = { pantalla = Screen.ProfileUpdate },
-                                onScanQr = {
-                                    aviso = "El lector QR se conectará al integrar el escáner."
+                                        onEditProfile = { pantalla = Screen.ProfileUpdate },
+
+                                onSettingsClick = {pantalla= Screen.NotificationSetting},
+
+                                        onScanQr = {
+                                    onAbrirEscanerQr(
+                                        OrigenEscaneoQr.CONSULTAR_EQUIPO
+                                    )
                                 }
                             ) {
                                 Box(modifier = Modifier.fillMaxSize()) {
@@ -192,12 +322,44 @@ fun App() {
                                             }
                                         }
 
-                                        2, 3 -> Box(
-                                            modifier = Modifier.fillMaxSize(),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text(if (pestana == 2) "Incidencias en desarrollo" else "Historial en desarrollo")
-                                        }
+
+
+                                        2 -> IncidenciasContent(
+                                            incidencias = incidenciaState.incidencias,
+                                            esEncargado = usuario.esEncargado,
+
+                                            // El backend ya permite listar
+                                            // las incidencias del estudiante
+                                            listadoEstudianteDisponible = !usuario.esEncargado,
+
+                                            cargando = incidenciaState.loading,
+                                            error = incidenciaState.errorMessage,
+
+                                            onVerDetalle = { id ->
+                                                idIncidenciaDetalle = id
+
+                                                incidenciaViewModel.clearError()
+                                                incidenciaViewModel.cargarDetalle(id)
+
+                                                pantalla = Screen.DetalleIncidencia
+                                            },
+
+                                            onReportarIncidencia = {
+                                                incidenciaViewModel.clearError()
+                                                incidenciaViewModel.clearSuccess()
+
+                                                pantalla = Screen.ReportarIncidencia
+                                            }
+                                        )
+
+                                        3 -> HistoryContent(
+                                            estado = historialState,
+                                            esEncargado = usuario.esEncargado,
+                                            onRecargar = {
+                                                historialViewModel.cargarHistorial(usuario)
+                                            }
+                                        )
+
                                     }
                                     if (aviso != null) {
                                         Snackbar(
@@ -232,26 +394,43 @@ fun App() {
                     }
 
                     Screen.CrearSolicitud -> {
-                        val seleccionados = equipoState.equipos.filter { it.idEquipo in idsSeleccionados }
+                        val equiposDisponibles = (
+                                equiposEscaneados + equipoState.equipos
+                                ).distinctBy { it.idEquipo }
+
+                        val seleccionados = equiposDisponibles.filter {
+                            it.idEquipo in idsSeleccionados
+                        }
                         CrearSolicitudContent(
                             equiposSeleccionados = seleccionados,
                             procesando = solicitudState.processing,
                             error = solicitudState.errorMessage,
                             onVolver = { pantalla = Screen.Home },
                             onElegirDeLista = { pantalla = Screen.SeleccionEquipos },
-                            onEscanearQr = { aviso = "El lector QR aún no está conectado." },
+                            onEscanearQr = {
+                                onAbrirEscanerQr(
+                                    OrigenEscaneoQr.AGREGAR_A_SOLICITUD
+                                )
+                            },
                             onQuitarEquipo = { id -> idsSeleccionados = idsSeleccionados - id },
-                            onEnviarSolicitud = { inicio, fin, motivo ->
+                            onEnviarSolicitud = { inicio, fin, motivo, aceptoTerminos ->
                                 val u = usuario
                                 val idAmbiente = seleccionados.firstOrNull()?.idAmbiente
-                                if (u != null && idAmbiente != null && seleccionados.isNotEmpty()) {
+
+                                if (
+                                    u != null &&
+                                    idAmbiente != null &&
+                                    seleccionados.isNotEmpty() &&
+                                    aceptoTerminos
+                                ) {
                                     solicitudViewModel.crear(
                                         usuario = u,
                                         idAmbiente = idAmbiente,
                                         motivo = motivo,
                                         fechaInicio = inicio,
                                         fechaFin = fin,
-                                        idsEquipos = seleccionados.map { it.idEquipo }
+                                        idsEquipos = seleccionados.map { it.idEquipo },
+                                        aceptoTerminos = aceptoTerminos
                                     )
                                 }
                             }
@@ -409,6 +588,132 @@ fun App() {
                         }
                     }
 
+
+                    Screen.ReportarIncidencia -> {
+                        val u = usuario
+
+                        if (u != null && !u.esEncargado) {
+                            ReportarIncidenciaContent(
+                                ambientes = equipoState.equipos
+                                    .distinctBy { it.idAmbiente }
+                                    .map {
+                                        OpcionAmbiente(
+                                            it.idAmbiente,
+                                            it.nombreAmbiente
+                                        )
+                                    },
+
+                                equipos = equipoState.equipos,
+                                procesando = incidenciaState.processing,
+                                error = incidenciaState.errorMessage,
+
+                                onVolver = {
+                                    pestana = 2
+                                    pantalla = Screen.Home
+                                },
+
+                                onRegistrar = {
+                                        idAmbiente,
+                                        idEquipo,
+                                        tipoIncidencia,
+                                        descripcion ->
+
+                                    incidenciaViewModel.registrar(
+                                        usuario = u,
+                                        idAmbiente = idAmbiente,
+                                        idEquipo = idEquipo,
+                                        tipoIncidencia = tipoIncidencia,
+                                        descripcion = descripcion
+                                    )
+                                }
+                            )
+                        } else {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                TextButton(
+                                    onClick = { pantalla = Screen.Home }
+                                ) {
+                                    Text("Formulario disponible para estudiantes. Volver")
+                                }
+                            }
+                        }
+                    }
+
+                    Screen.DetalleIncidencia -> {
+
+                        val incidencia = incidenciaState.incidenciaSeleccionada
+                            ?.takeIf {
+                                it.idTicket == idIncidenciaDetalle
+                            }
+                            ?: incidenciaState.incidencias.firstOrNull {
+                                it.idTicket == idIncidenciaDetalle
+                            }
+
+                        if (incidencia == null) {
+
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (incidenciaState.loading) {
+                                    CircularProgressIndicator()
+                                } else {
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Text(
+                                            incidenciaState.errorMessage
+                                                ?: "No se encontró la incidencia"
+                                        )
+
+                                        TextButton(
+                                            onClick = {
+                                                pestana = 2
+                                                pantalla = Screen.Home
+                                            }
+                                        ) {
+                                            Text("Volver")
+                                        }
+                                    }
+                                }
+                            }
+
+                        } else {
+
+                            DetalleIncidenciaContent(
+                                incidencia = incidencia,
+                                esEncargado = usuario?.esEncargado == true,
+                                procesando = incidenciaState.processing,
+                                error = incidenciaState.errorMessage,
+
+                                onVolver = {
+                                    pestana = 2
+                                    pantalla = Screen.Home
+                                },
+
+                                onActualizarEstado = {
+                                        idTicket,
+                                        nuevoEstado,
+                                        respuesta ->
+
+                                    val u = usuario
+
+                                    if (u != null && u.esEncargado) {
+                                        incidenciaViewModel.cambiarEstado(
+                                            usuario = u,
+                                            idTicket = idTicket,
+                                            nuevoEstado = nuevoEstado,
+                                            respuestaEncargado = respuesta
+                                        )
+                                    }
+                                }
+                            )
+                        }
+                    }
+
+
                     Screen.ProfileUpdate -> ProfileUpdateContent(
                         onBack = { pantalla = Screen.Home },
                         onSave = { pantalla = Screen.Home }
@@ -418,6 +723,113 @@ fun App() {
                         TextButton(onClick = { pantalla = Screen.Home }) {
                             Text("Volver al inicio")
                         }
+                    }
+                }
+            }
+        }
+        if (mostrarFichaQr) {
+            ModalBottomSheet(
+                onDismissRequest = {
+                    mostrarFichaQr = false
+                    equipoViewModel.limpiarSeleccion()
+                }
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    when {
+                        equipoState.loading -> {
+                            CircularProgressIndicator()
+                            Text("Buscando equipo...")
+                        }
+
+                        equipoState.errorMessage != null -> {
+                            Text(
+                                "No se encontró el equipo",
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Text(
+                                equipoState.errorMessage.orEmpty()
+                            )
+                        }
+
+                        equipoState.equipoSeleccionado != null -> {
+                            val equipo = equipoState.equipoSeleccionado!!
+
+                            Text(
+                                "Equipo escaneado",
+                                color = MaterialTheme.colorScheme.primary
+                            )
+
+                            Text(
+                                equipo.nombre,
+                                style = MaterialTheme.typography.titleLarge
+                            )
+
+                            HorizontalDivider()
+
+                            Text("Código: ${equipo.codigoQr}")
+                            Text("Ubicación: ${equipo.nombreAmbiente}")
+                            Text("Estado: ${equipo.disponibilidad.etiqueta}")
+
+                            val equiposActuales =
+                                equiposEscaneados + equipoState.equipos
+
+                            val mismoAmbiente = idsSeleccionados.all { id ->
+                                equiposActuales
+                                    .firstOrNull { it.idEquipo == id }
+                                    ?.idAmbiente == equipo.idAmbiente
+                            }
+
+                            if (
+                                origenQrActual ==
+                                OrigenEscaneoQr.AGREGAR_A_SOLICITUD
+                            ) {
+                                Button(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    enabled = equipo.estaDisponible &&
+                                            mismoAmbiente,
+                                    onClick = {
+                                        equiposEscaneados =
+                                            (equiposEscaneados + equipo)
+                                                .distinctBy { it.idEquipo }
+
+                                        idsSeleccionados =
+                                            idsSeleccionados + equipo.idEquipo
+
+                                        mostrarFichaQr = false
+                                        equipoViewModel.limpiarSeleccion()
+                                    }
+                                ) {
+                                    Text("+ Agregar a la solicitud")
+                                }
+
+                                if (!equipo.estaDisponible) {
+                                    Text("Este equipo no está disponible.")
+                                } else if (!mismoAmbiente) {
+                                    Text(
+                                        "Los equipos deben pertenecer al mismo ambiente."
+                                    )
+                                }
+                            }
+                        }
+
+                        else -> {
+                            Text("Consultando información del equipo...")
+                        }
+                    }
+
+                    TextButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            mostrarFichaQr = false
+                            equipoViewModel.limpiarSeleccion()
+                        }
+                    ) {
+                        Text("Cerrar")
                     }
                 }
             }

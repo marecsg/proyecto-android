@@ -83,6 +83,9 @@ kotlin {
             implementation(libs.kotlin.test)
         }
     }
+    sourceSets.commonMain.dependencies {
+        implementation(kotlin("test"))
+    }
 }
 
 android {
