@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PrestamoDto(
     val idPrestamo: Int,
+    val codigoCorrelativo: String? = null,
     val idSolicitud: Int,
     val nombreEstudiante: String? = null,
     val codigoEstudiante: String? = null,

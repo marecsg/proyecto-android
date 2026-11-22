@@ -55,7 +55,8 @@ data class Prestamo(
     val fechaInicioUso: String? = null,
     val fechaFinUso: String? = null,
     val estado: EstadoPrestamo,
-    val detalles: List<DetallePrestamo> = emptyList()
+    val detalles: List<DetallePrestamo> = emptyList(),
+    val codigoCorrelativo: String? = null
 ) {
     val estaActivo: Boolean
         get() = estado == EstadoPrestamo.EN_CURSO || estado == EstadoPrestamo.PENDIENTE

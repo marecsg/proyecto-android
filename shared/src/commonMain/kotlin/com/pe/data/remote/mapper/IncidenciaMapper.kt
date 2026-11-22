@@ -23,6 +23,7 @@ fun TicketIncidenciaDto.toDomain(): Incidencia {
         ),
         fechaReporte = fechaReporte,
         respuestaEncargado = respuestaEncargado,
-        fechaResolucion = fechaResolucion
+        fechaResolucion = fechaResolucion,
+        codigoCorrelativo = codigoCorrelativo
     )
 }

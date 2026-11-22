@@ -8,11 +8,11 @@ import kotlinx.serialization.json.Json
 
 object ApiClient {
 
-    //prueba emulador const
-    val BASE_URL = "http://10.0.2.2:8080"
+    //prueba emulador
+    //const val BASE_URL = "http://10.0.2.2:8080"
 
     //prueba con celular (se usa la ip de la pc)
-    //const val BASE_URL = "http://192.168.1.38:8080"
+    const val BASE_URL = "http://192.168.1.38:8080"
 
     val httpClient: HttpClient by lazy {
         HttpClient {

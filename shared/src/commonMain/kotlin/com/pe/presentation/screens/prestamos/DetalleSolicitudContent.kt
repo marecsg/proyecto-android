@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import com.pe.domain.model.EstadoSolicitud
 import com.pe.domain.model.Solicitud
 import com.pe.presentation.components.BadgeEstado
-import com.pe.presentation.components.numeroVisual
 import com.pe.presentation.components.toTono
 import com.pe.presentation.theme.*
 
@@ -30,7 +29,6 @@ import com.pe.presentation.theme.*
 @Composable
 fun DetalleSolicitudContent(
     solicitud: Solicitud,
-    numero: Int,
     esEncargado: Boolean,
     onBack: () -> Unit,
     onCancelar: (Int) -> Unit,
@@ -250,8 +248,11 @@ fun DetalleSolicitudContent(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("Solicitud N.º ${numeroVisual(numero)}", color = TextMuted,
-                                style = MaterialTheme.typography.labelSmall)
+                            Text(
+                                text = solicitud.codigoCorrelativo?.takeIf { it.isNotBlank() } ?: "----",
+                                color = TextMuted,
+                                style = MaterialTheme.typography.labelSmall
+                            )
                             Text("${solicitud.detalles.size} equipo(s)", color = TextDark,
                                 style = MaterialTheme.typography.titleLarge)
                         }

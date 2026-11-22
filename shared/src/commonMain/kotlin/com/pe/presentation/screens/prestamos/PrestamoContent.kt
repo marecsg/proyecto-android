@@ -2,10 +2,10 @@
 package com.pe.presentation.screens.prestamos
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -21,7 +21,6 @@ import androidx.compose.ui.unit.dp
 import com.pe.domain.model.Prestamo
 import com.pe.domain.model.Solicitud
 import com.pe.presentation.components.PrestamoCard
-import com.pe.presentation.screens.solicitudes.SolicitudesContent
 import com.pe.presentation.theme.*
 
 @Composable
@@ -361,29 +360,21 @@ private fun ListaPrestamos(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
 
-                    itemsIndexed(
-                        items = prestamosFiltrados,
-                        key = { _, prestamo ->
-                            prestamo.idPrestamo
-                        }
-                    ) { _, prestamo ->
 
-                        // POSICIÓN EN LA LISTA ORIGINAL
-                        // NO ES EL ID DE BASE DE DATOS
-                        val numeroVisualPrestamo =
-                            prestamos.indexOfFirst {
-                                it.idPrestamo == prestamo.idPrestamo
-                            } + 1
+                    items(
+                        items = prestamosFiltrados,
+                        key = { it.idPrestamo }
+                    ) { prestamo ->
 
                         PrestamoCard(
                             prestamo = prestamo,
-                            numero = numeroVisualPrestamo,
                             esEncargado = esEncargado,
                             onClick = onVerDetalle,
                             onIniciarPrestamo = onIniciarPrestamo,
                             onRegistrarDevolucion = onRegistrarDevolucion
                         )
                     }
+
                 }
             }
         }

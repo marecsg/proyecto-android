@@ -23,7 +23,6 @@ import com.pe.presentation.theme.*
 @Composable
 fun SolicitudCard(
     solicitud: Solicitud,
-    numero: Int,
     onClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
     mostrarEstudiante: Boolean = false,
@@ -55,7 +54,7 @@ fun SolicitudCard(
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
-                        text = "Solicitud N.º ${numeroVisual(numero)}",
+                        text = solicitud.codigoCorrelativo?.takeIf { it.isNotBlank() } ?: "----",
                         style = MaterialTheme.typography.titleMedium,
                         color = TextDark
                     )

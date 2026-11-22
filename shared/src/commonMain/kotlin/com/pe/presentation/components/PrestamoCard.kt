@@ -24,7 +24,6 @@ import com.pe.presentation.theme.*
 @Composable
 fun PrestamoCard(
     prestamo: Prestamo,
-    numero: Int,
     onClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
     esEncargado: Boolean = false,
@@ -55,7 +54,7 @@ fun PrestamoCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Préstamo N.º ${numeroVisual(numero)}",
+                    text = prestamo.codigoCorrelativo?.takeIf { it.isNotBlank() } ?: "----",
                     style = MaterialTheme.typography.titleMedium,
                     color = TextDark
                 )

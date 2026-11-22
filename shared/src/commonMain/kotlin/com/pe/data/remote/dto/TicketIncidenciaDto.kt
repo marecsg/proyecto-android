@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class TicketIncidenciaDto(
     val idTicket: Int,
+    val codigoCorrelativo: String? = null,
     val idUsuarioReporta: Int? = null,
     val nombreUsuarioReporta: String? = null,
     val idAmbiente: Int? = null,

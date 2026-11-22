@@ -24,7 +24,6 @@ import com.pe.domain.model.EstadoPrestamo
 import com.pe.domain.model.Prestamo
 import com.pe.domain.model.Solicitud
 import com.pe.presentation.components.BotonPrincipal
-import com.pe.presentation.components.numeroVisual
 import com.pe.presentation.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -249,7 +248,7 @@ fun DetallePrestamoContent(
                 ) {
                     Column {
                         Text(
-                            "Préstamo N.º ${numeroVisual(prestamo.idPrestamo)}",
+                            prestamo.codigoCorrelativo?.takeIf { it.isNotBlank() } ?: "----",
                             style = MaterialTheme.typography.labelMedium,
                             color = TextMuted
                         )

@@ -197,7 +197,7 @@ fun DetalleIncidenciaContent(
                 ) {
 
                     Text(
-                        text = "Incidencia #${incidencia.idTicket}",
+                        text = incidencia.codigoCorrelativo?.takeIf { it.isNotBlank() } ?: "----",
                         style = MaterialTheme.typography.titleLarge,
                         color = TextDark
                     )

@@ -22,7 +22,8 @@ fun PrestamoDto.toDomain(): Prestamo {
         fechaInicioUso = fechaInicioUso,
         fechaFinUso = fechaFinUso,
         estado = EstadoPrestamo.desdeTexto(estadoPrestamo),
-        detalles = detalles.map { it.toDomain() }
+        detalles = detalles.map { it.toDomain() } ,
+        codigoCorrelativo = codigoCorrelativo
     )
 }
 

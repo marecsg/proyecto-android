@@ -2,9 +2,11 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.androidApplication)
-    alias(libs.plugins.kotlinAndroid) // <--- ESTO ARREGLA EL ERROR DE LA LÍNEA 9
+    alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+
+    alias(libs.plugins.googleServices)
 }
 
 kotlin {
@@ -24,6 +26,10 @@ dependencies {
     implementation(compose.materialIconsExtended)
     implementation(libs.androidx.lifecycle.runtimeCompose)
     implementation(libs.androidx.core.ktx)
+
+    //notificaciones
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
 
     // CameraX
     implementation(libs.androidx.camera.core)

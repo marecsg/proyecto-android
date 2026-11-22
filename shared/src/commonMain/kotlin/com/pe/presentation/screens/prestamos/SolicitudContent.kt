@@ -1,9 +1,8 @@
-
-package com.pe.presentation.screens.solicitudes
+package com.pe.presentation.screens.prestamos
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material3.*
@@ -14,7 +13,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 import com.pe.domain.model.Solicitud
-import com.pe.presentation.components.BotonPrincipal
 import com.pe.presentation.components.SolicitudCard
 import com.pe.presentation.theme.*
 
@@ -179,28 +177,16 @@ fun SolicitudesContent(
                     ),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-
-                    itemsIndexed(
+                    items(
                         items = solicitudesFiltradas,
-                        key = { _, solicitud ->
-                            solicitud.idSolicitud
-                        }
-                    ) { indice, solicitud ->
-
-                        // EL NÚMERO VISUAL SE MANTIENE
-                        // AUNQUE SE FILTRE LA LISTA
-                        val numeroOriginal = solicitudes.indexOfFirst {
-                            it.idSolicitud == solicitud.idSolicitud
-                        } + 1
+                        key = { it.idSolicitud }
+                    ) { solicitud ->
 
                         SolicitudCard(
                             solicitud = solicitud,
-                            numero = numeroOriginal,
                             mostrarEstudiante = esEncargado,
                             codigoEstudiante = if (esEncargado) {
-                                codigosPorEstudiante[
-                                    solicitud.idEstudiante
-                                ]
+                                codigosPorEstudiante[solicitud.idEstudiante]
                             } else {
                                 null
                             },

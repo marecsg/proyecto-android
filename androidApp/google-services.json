@@ -1,0 +1,30 @@
+
+{
+  "project_info": {
+    "project_number": "886111465637",
+    "project_id": "labmanager-cfb7f",
+    "storage_bucket": "labmanager-cfb7f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:886111465637:android:deb2cf1e10cac1ab9d5d4c",
+        "android_client_info": {
+          "package_name": "com.pe"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDu7_MPwoc2nQRtKXSqdB6aNGEHSJwp0Pk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

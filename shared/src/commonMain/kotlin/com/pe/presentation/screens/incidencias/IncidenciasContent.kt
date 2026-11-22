@@ -199,7 +199,7 @@ private fun TarjetaIncidencia(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Incidencia #${incidencia.idTicket}",
+                    text = incidencia.codigoCorrelativo?.takeIf { it.isNotBlank() } ?: "----",
                     style = MaterialTheme.typography.titleMedium,
                     color = TextDark
                 )

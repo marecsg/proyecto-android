@@ -22,7 +22,6 @@ import com.pe.domain.model.EstadoPrestamo
 import com.pe.domain.model.Prestamo
 import com.pe.domain.repository.PrestamoRepository.DevolucionItem
 import com.pe.presentation.components.BotonPrincipal
-import com.pe.presentation.components.numeroVisual
 import com.pe.presentation.theme.*
 
 private data class EvaluacionDevolucion(
@@ -279,11 +278,8 @@ fun RegistrarDevolucionContent(
                             )
 
                             Text(
-                                "Cód. ${
-                                    prestamo.codigoEstudiante
-                                        .ifBlank { "--" }
-                                } · Préstamo #${
-                                    numeroVisual(prestamo.idPrestamo)
+                                text = "Cód. ${prestamo.codigoEstudiante.ifBlank { "--" }} · ${
+                                    prestamo.codigoCorrelativo?.takeIf { it.isNotBlank() } ?: "----"
                                 }",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = TextMuted

@@ -458,7 +458,6 @@ fun App(
                         } else {
                             DetalleSolicitudContent(
                                 solicitud = solicitud,
-                                numero = solicitud.idSolicitud,
                                 esEncargado = usuario?.esEncargado == true,
                                 onBack = { pantalla = Screen.Home },
                                 onCancelar = { id ->
