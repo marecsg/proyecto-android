@@ -5,13 +5,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-
+import com.pe.notifications.AndroidLocalNotificationPlatform
 import com.pe.qr.QrScannerScreen
 
 class MainActivity : ComponentActivity() {
@@ -20,24 +19,25 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
+        val notificationPlatform =
+            AndroidLocalNotificationPlatform(applicationContext)
+
         setContent {
 
-            // Indica desde dónde se abrió la cámara
             var origenEscaneo by remember {
                 mutableStateOf<OrigenEscaneoQr?>(null)
             }
 
-            // Guarda temporalmente el resultado del QR
             var lecturaQr by remember {
                 mutableStateOf<LecturaQr?>(null)
             }
 
-            Box(
-                modifier = Modifier.fillMaxSize()
-            ) {
+            Box(modifier = Modifier.fillMaxSize()) {
 
-                // Aplicación principal de LabManager
+                // ÚNICA llamada a App
                 App(
+                    notificationPlatform = notificationPlatform,
+
                     onAbrirEscanerQr = { origen ->
                         lecturaQr = null
                         origenEscaneo = origen
@@ -50,23 +50,17 @@ class MainActivity : ComponentActivity() {
                     }
                 )
 
-                // La cámara aparece encima de la aplicación
+                // Escáner QR
                 if (origenEscaneo != null) {
-
                     QrScannerScreen(
                         onQrDetected = { codigo ->
-
                             val origen = origenEscaneo
 
                             if (origen != null) {
-
-                                // Enviar código y origen a App.kt
                                 lecturaQr = LecturaQr(
                                     codigo = codigo,
                                     origen = origen
                                 )
-
-                                // Cerrar la cámara
                                 origenEscaneo = null
                             }
                         },

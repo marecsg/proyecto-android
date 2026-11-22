@@ -6,6 +6,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.pe.data.notification.LocalNotificationPlatform
+import com.pe.data.notification.UnsupportedLocalNotificationPlatform
+import com.pe.presentation.NotificationSettingsContent
+import com.pe.presentation.viewmodel.NotificationSettingsViewModel
+
 import com.pe.di.appModule
 import com.pe.domain.model.*
 import com.pe.presentation.Screen
@@ -20,6 +25,7 @@ import org.koin.compose.viewmodel.koinViewModel
 
 import com.pe.presentation.screens.incidencias.*
 import com.pe.presentation.screens.historial.HistoryContent
+import org.koin.dsl.module
 
 enum class OrigenEscaneoQr {
     CONSULTAR_EQUIPO,
@@ -35,9 +41,14 @@ data class LecturaQr(
 fun App(
     onAbrirEscanerQr: (OrigenEscaneoQr) -> Unit = {},
     lecturaQr: LecturaQr? = null,
-    onQrConsumido: () -> Unit = {}
+    onQrConsumido: () -> Unit = {},
+    notificationPlatform: LocalNotificationPlatform = UnsupportedLocalNotificationPlatform
 ) {
-    KoinApplication(application = { modules(appModule) }) {
+    val notificationModule = remember(notificationPlatform){
+        module { single<LocalNotificationPlatform>{notificationPlatform} }
+    }
+
+    KoinApplication(application = { modules(appModule,notificationModule) }) {
         val authViewModel = koinViewModel<AuthViewModel>()
         val equipoViewModel = koinViewModel<EquipoViewModel>()
         val solicitudViewModel = koinViewModel<SolicitudViewModel>()
@@ -45,6 +56,7 @@ fun App(
         val incidenciaViewModel = koinViewModel<IncidenciaViewModel>()
         val historialViewModel = koinViewModel<HistorialViewModel>()
 
+        val notificationSettingsViewModel = koinViewModel<NotificationSettingsViewModel>()
         val auth by authViewModel.state.collectAsState()
         val equipoState by equipoViewModel.uiState.collectAsState()
         val solicitudState by solicitudViewModel.uiState.collectAsState()
@@ -221,6 +233,15 @@ fun App(
                         }
                     )
 
+                    Screen.NotificationSetting -> {
+                        NotificationSettingsContent(
+                            viewModel = notificationSettingsViewModel,
+                            onBack = {
+                                pantalla = Screen.Home
+                            }
+                        )
+                    }
+
                     Screen.Home -> {
                         if (usuario == null) {
                             WelcomeContent(
@@ -242,8 +263,11 @@ fun App(
                                     idsSeleccionados = emptySet()
                                     pantalla = Screen.Login
                                 },
-                                onEditProfile = { pantalla = Screen.ProfileUpdate },
-                                onScanQr = {
+                                        onEditProfile = { pantalla = Screen.ProfileUpdate },
+
+                                onSettingsClick = {pantalla= Screen.NotificationSetting},
+
+                                        onScanQr = {
                                     onAbrirEscanerQr(
                                         OrigenEscaneoQr.CONSULTAR_EQUIPO
                                     )

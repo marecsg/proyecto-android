@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.Report
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -31,8 +32,10 @@ fun HomeContent(
     onTabSelected: (Int) -> Unit,
     onLogout: () -> Unit,
     onEditProfile: () -> Unit,
+    onSettingsClick: () -> Unit = {},
     onScanQr: () -> Unit,
     contenido: @Composable () -> Unit
+
 ) {
     val drawerState = rememberDrawerState(
         initialValue = DrawerValue.Closed
@@ -95,6 +98,13 @@ fun HomeContent(
                             contentDescription = null
                         )
                     }
+                )
+
+                NavigationDrawerItem(
+                    label = { Text("Ajustes") },
+                    selected = false,
+                    onClick = { scope.launch { drawerState.close(); onSettingsClick() } },
+                    icon = { Icon(Icons.Default.Settings, null) }
                 )
 
                 HorizontalDivider(
