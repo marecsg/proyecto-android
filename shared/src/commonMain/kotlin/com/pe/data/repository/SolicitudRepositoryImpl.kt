@@ -98,11 +98,15 @@ class SolicitudRepositoryImpl(
         motivoSolicitud: String,
         fechaInicioReserva: String,
         fechaFinReserva: String,
-        idsEquipos: List<Int>
+        idsEquipos: List<Int>,
+        aceptoTerminos: Boolean
     ): Result<Solicitud> = ejecutar {
 
         require(idsEquipos.isNotEmpty()) {
             "Debes seleccionar al menos un equipo"
+        }
+        require(aceptoTerminos) {
+            "Debes aceptar los términos y condiciones"
         }
 
         val request = CrearSolicitudRequest(
@@ -113,7 +117,8 @@ class SolicitudRepositoryImpl(
             fechaFinReserva = fechaFinReserva,
             equipos = idsEquipos.map { id ->
                 SolicitudEquipoRequest(idEquipo = id)
-            }
+            },
+            aceptoTerminos = aceptoTerminos
         )
 
         val response = client.post(

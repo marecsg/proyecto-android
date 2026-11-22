@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class SolicitudDto(
     val idSolicitud: Int,
+    val codigoCorrelativo: String? = null,
     val idEstudiante: Int,
     val nombreEstudiante: String,
     val codigoEstudiante: String? = null,
@@ -35,7 +36,8 @@ data class CrearSolicitudRequest(
     val motivoSolicitud: String,
     val fechaInicioReserva: String,
     val fechaFinReserva: String,
-    val equipos: List<SolicitudEquipoRequest>
+    val equipos: List<SolicitudEquipoRequest>,
+    val aceptoTerminos: Boolean = false
 )
 
 @Serializable

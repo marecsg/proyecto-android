@@ -35,7 +35,8 @@ data class Solicitud(
     val codigoEstudiante: String = "",
     val fechaRespuesta: String? = null,
     val comentarioRespuesta: String? = null,
-    val detalles: List<DetalleSolicitud> = emptyList()
+    val detalles: List<DetalleSolicitud> = emptyList(),
+    val codigoCorrelativo: String? = null
 ) {
     val estaPendiente: Boolean
         get() = estado == EstadoSolicitud.PENDIENTE

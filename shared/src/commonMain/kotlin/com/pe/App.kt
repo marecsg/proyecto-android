@@ -389,17 +389,24 @@ fun App(
                                 )
                             },
                             onQuitarEquipo = { id -> idsSeleccionados = idsSeleccionados - id },
-                            onEnviarSolicitud = { inicio, fin, motivo ->
+                            onEnviarSolicitud = { inicio, fin, motivo, aceptoTerminos ->
                                 val u = usuario
                                 val idAmbiente = seleccionados.firstOrNull()?.idAmbiente
-                                if (u != null && idAmbiente != null && seleccionados.isNotEmpty()) {
+
+                                if (
+                                    u != null &&
+                                    idAmbiente != null &&
+                                    seleccionados.isNotEmpty() &&
+                                    aceptoTerminos
+                                ) {
                                     solicitudViewModel.crear(
                                         usuario = u,
                                         idAmbiente = idAmbiente,
                                         motivo = motivo,
                                         fechaInicio = inicio,
                                         fechaFin = fin,
-                                        idsEquipos = seleccionados.map { it.idEquipo }
+                                        idsEquipos = seleccionados.map { it.idEquipo },
+                                        aceptoTerminos = aceptoTerminos
                                     )
                                 }
                             }

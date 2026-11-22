@@ -144,7 +144,8 @@ class SolicitudViewModel(
         motivo: String,
         fechaInicio: String,
         fechaFin: String,
-        idsEquipos: List<Int>
+        idsEquipos: List<Int>,
+        aceptoTerminos: Boolean
     ) {
         if (_uiState.value.processing) return
 
@@ -163,7 +164,8 @@ class SolicitudViewModel(
                 motivoSolicitud = motivo,
                 fechaInicioReserva = fechaInicio,
                 fechaFinReserva = fechaFin,
-                idsEquipos = idsEquipos
+                idsEquipos = idsEquipos,
+                aceptoTerminos = aceptoTerminos
             )
                 .onSuccess { solicitud ->
                     _uiState.update {
