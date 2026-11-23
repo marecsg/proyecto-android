@@ -1,4 +1,5 @@
 package com.pe.domain.model
+import com.pe.utils.FechaUtils.formatearFechaHora
 
 data class Historial(
     val idHistorial: Int,
@@ -14,4 +15,8 @@ data class Historial(
 ) {
     val actorEsAfectado: Boolean
         get() = idUsuarioActor == idUsuarioAfectado
+
+    val fechaAccionVisual: String
+        get() = formatearFechaHora(fechaAccion)
+
 }

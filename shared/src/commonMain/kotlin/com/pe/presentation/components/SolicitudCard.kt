@@ -109,13 +109,13 @@ fun SolicitudCard(
             )
 
             Text(
-                text = "Inicio: ${solicitud.fechaInicioReserva}",
+                text = "Inicio: ${solicitud.inicioReservaVisual}",
                 style = MaterialTheme.typography.labelSmall,
                 color = TextBody
             )
 
             Text(
-                text = "Fin: ${solicitud.fechaFinReserva}",
+                text = "Fin: ${solicitud.finReservaVisual}",
                 style = MaterialTheme.typography.labelSmall,
                 color = TextBody
             )

@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.pe.domain.model.Equipo
 import com.pe.presentation.components.BotonPrincipal
 import com.pe.presentation.theme.*
+import com.pe.utils.FechaUtils
 import kotlinx.datetime.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,6 +39,8 @@ fun CrearSolicitudContent(
     var fechaFin by remember { mutableStateOf("") }
     var horaInicio by remember { mutableStateOf("") }
     var horaFin by remember { mutableStateOf("") }
+    var periodoInicio by remember { mutableStateOf("AM") }
+    var periodoFin by remember { mutableStateOf("AM") }
     var motivo by remember { mutableStateOf("") }
     var aceptoTerminos by remember {
         mutableStateOf(false)
@@ -127,13 +130,23 @@ fun CrearSolicitudContent(
         }
     }
 
-    val inicio = if (
-        fechaInicio.isNotBlank() && horaValida(horaInicio)
-    ) "${fechaInicio}T${horaInicio}:00" else null
+    val horaInicio24 = FechaUtils.convertirHora24(
+        horaInicio,
+        periodoInicio
+    )
 
-    val fin = if (
-        fechaFin.isNotBlank() && horaValida(horaFin)
-    ) "${fechaFin}T${horaFin}:00" else null
+    val horaFin24 = FechaUtils.convertirHora24(
+        horaFin,
+        periodoFin
+    )
+
+    val inicio = if (fechaInicio.isNotBlank() && horaInicio24 != null) {
+        "${fechaInicio}T${horaInicio24}:00"
+    } else null
+
+    val fin = if (fechaFin.isNotBlank() && horaFin24 != null) {
+        "${fechaFin}T${horaFin24}:00"
+    } else null
 
     val fechasValidas = inicio != null &&
             fin != null && fin > inicio
@@ -302,6 +315,7 @@ fun CrearSolicitudContent(
                     }
                 }
 
+
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Hora de inicio")
                     OutlinedTextField(
@@ -315,6 +329,17 @@ fun CrearSolicitudContent(
                             keyboardType = KeyboardType.Number
                         )
                     )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        listOf("AM", "PM").forEach { periodo ->
+                            FilterChip(
+                                selected = periodoInicio == periodo,
+                                onClick = { periodoInicio = periodo },
+                                label = { Text(periodo) }
+                            )
+                        }
+                    }
                 }
             }
 
@@ -344,6 +369,17 @@ fun CrearSolicitudContent(
                             keyboardType = KeyboardType.Number
                         )
                     )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        listOf("AM", "PM").forEach { periodo ->
+                            FilterChip(
+                                selected = periodoFin == periodo,
+                                onClick = { periodoFin = periodo },
+                                label = { Text(periodo) }
+                            )
+                        }
+                    }
                 }
             }
 
@@ -353,12 +389,6 @@ fun CrearSolicitudContent(
                     color = MaterialTheme.colorScheme.error
                 )
             }
-
-            Text(
-                "Introduce la hora en formato de 24 horas (HH:mm).",
-                style = MaterialTheme.typography.bodySmall,
-                color = TextMuted
-            )
 
             // MOTIVO
             Text(

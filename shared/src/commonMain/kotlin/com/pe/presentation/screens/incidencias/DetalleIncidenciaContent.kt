@@ -234,10 +234,7 @@ fun DetalleIncidenciaContent(
 
                     DatoIncidencia(
                         "Fecha del reporte",
-                        incidencia.fechaReporte
-                            ?.replace("T", " ")
-                            ?.take(16)
-                            ?: "No disponible"
+                        incidencia.fechaReporteVisual
                     )
                 }
             }
@@ -353,10 +350,7 @@ fun DetalleIncidenciaContent(
 
                         DatoIncidencia(
                             "Fecha de resolución",
-                            incidencia.fechaResolucion
-                                ?.replace("T", " ")
-                                ?.take(16)
-                                ?: "No disponible"
+                            incidencia.fechaResolucionVisual
                         )
                     }
                 }

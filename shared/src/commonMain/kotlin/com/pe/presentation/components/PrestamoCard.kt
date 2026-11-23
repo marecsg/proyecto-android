@@ -175,10 +175,9 @@ fun PrestamoCard(
                 EstadoPrestamo.VENCIDO -> {
                     Text(
                         text = if (prestamo.fechaInicioUso.isNullOrBlank()) {
-                            "Inicio real: ${prestamo.fechaVisual} · " +
-                                    prestamo.horaInicio
+                            "Inicio real: ${prestamo.fechaInicoVisual}"
                         } else {
-                            "Inicio real: Desconocido"
+                            "Inicio real: Sin registrar"
                         },
                         style = MaterialTheme.typography.bodyMedium,
                         color = TextBody
@@ -187,7 +186,12 @@ fun PrestamoCard(
 
                 EstadoPrestamo.FINALIZADO -> {
                     Text(
-                        text = "Horario real: ${prestamo.horarioPrestamo}",
+                        text = "Inicio real: ${prestamo.fechaInicoVisual}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextBody
+                    )
+                    Text(
+                        text = "Fin real: ${prestamo.fechaFinVisual}",
                         style = MaterialTheme.typography.bodyMedium,
                         color = TextBody
                     )

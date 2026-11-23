@@ -322,7 +322,7 @@ fun DetallePrestamoContent(
                         TextoDato(
                             "Inicio real",
                             if (prestamo.fechaInicioUso != null) {
-                                "${prestamo.fechaVisual} · ${prestamo.horaInicio}"
+                                prestamo.fechaInicoVisual
                             } else {
                                 "Sin registrar"
                             }
@@ -331,8 +331,12 @@ fun DetallePrestamoContent(
 
                     EstadoPrestamo.FINALIZADO -> {
                         TextoDato(
-                            "Uso real",
-                            prestamo.horarioPrestamo
+                            "Inicio real",
+                            prestamo.fechaInicoVisual
+                        )
+                        TextoDato(
+                            "Fin real",
+                            prestamo.fechaFinVisual
                         )
                     }
 
@@ -477,7 +481,7 @@ fun DetallePrestamoContent(
                     EstadoPrestamo.VENCIDO -> {
                         HitoPrestamo(
                             "Equipos retirados",
-                            "${prestamo.fechaVisual} · ${prestamo.horaInicio}",
+                            prestamo.fechaInicoVisual,
                             true
                         )
 
@@ -491,13 +495,13 @@ fun DetallePrestamoContent(
                     EstadoPrestamo.FINALIZADO -> {
                         HitoPrestamo(
                             "Equipos retirados",
-                            "${prestamo.fechaVisual} · ${prestamo.horaInicio}",
+                            prestamo.fechaInicoVisual,
                             true
                         )
 
                         HitoPrestamo(
                             "Devolución registrada",
-                            prestamo.horarioPrestamo,
+                            prestamo.fechaFinVisual,
                             true
                         )
                     }

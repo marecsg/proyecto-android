@@ -1,5 +1,7 @@
 package com.pe.domain.model
 
+import com.pe.utils.FechaUtils.formatearFechaHora
+
 enum class EstadoSolicitud(val etiqueta: String) {
     PENDIENTE("Pendiente"),
     APROBADA("Aprobada"),
@@ -53,27 +55,5 @@ data class Solicitud(
     val fechaRespuestaVisual: String
         get() = formatearFechaHora(fechaRespuesta)
 
-    private fun formatearFechaHora(fechaIso: String?): String {
-        if (fechaIso.isNullOrBlank()) return "Desconocido"
 
-        val secciones = fechaIso.split("T")
-        if (secciones.size != 2) return fechaIso
-
-        val bloqueFecha = secciones[0].split("-")
-        val fechaFormateada = if (bloqueFecha.size == 3) {
-            "${bloqueFecha[2]}/${bloqueFecha[1]}/${bloqueFecha[0]}"
-        } else {
-            secciones[0]
-        }
-
-        val bloqueHora = secciones[1].split(":")
-        val hora24 = bloqueHora.getOrNull(0)?.toIntOrNull()
-            ?: return fechaFormateada
-
-        val minutos = bloqueHora.getOrNull(1)?.padStart(2, '0') ?: "00"
-        val hora12 = if (hora24 % 12 == 0) 12 else hora24 % 12
-        val turno = if (hora24 < 12) "AM" else "PM"
-
-        return "$fechaFormateada $hora12:$minutos $turno"
-    }
 }

@@ -332,26 +332,6 @@ fun ReportarIncidenciaContent(
                 enabled = !procesando,
                 shape = RoundedCornerShape(12.dp)
             )
-
-            // FOTOGRAFIAS
-            Text(
-                "Fotografías",
-                style = MaterialTheme.typography.titleSmall
-            )
-
-            Text(
-                "La carga de fotografías todavía " +
-                        "no está disponible en el backend.",
-                style = MaterialTheme.typography.bodySmall,
-                color = TextMuted
-            )
-
-            if (error != null) {
-                Text(
-                    text = error,
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
         }
     }
 }

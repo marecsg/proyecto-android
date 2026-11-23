@@ -5,12 +5,13 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.clickable
 
 import com.pe.domain.model.Historial
 import com.pe.presentation.theme.*
@@ -18,7 +19,8 @@ import com.pe.presentation.theme.*
 @Composable
 fun HistoryCard(
     historial: Historial,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onVerDetalle: ((Historial) -> Unit)? = null
 ) {
 
     // Convertir tipo de acción en texto amigable
@@ -38,21 +40,40 @@ fun HistoryCard(
 
         else -> historial.tipoAccion.replace("_", " ")
     }
+    val detalle = when (historial.tipoAccion) {
+        "SOLICITUD_CREADA" ->
+            "Se registró una nueva solicitud de préstamo de equipos."
 
-    // Colores según la acción
-    val tono = when (historial.tipoAccion) {
-        "SOLICITUD_APROBADA",
-        "DEVOLUCION_REGISTRADA",
-        "INCIDENCIA_RESUELTA" -> TonoEstado.SUCCESS
+        "SOLICITUD_APROBADA" ->
+            "La solicitud de préstamo fue aprobada."
 
-        "SOLICITUD_RECHAZADA",
-        "SOLICITUD_CANCELADA",
-        "PRESTAMO_CANCELADO" -> TonoEstado.ERROR
+        "SOLICITUD_RECHAZADA" ->
+            "La solicitud de préstamo fue rechazada."
 
-        "SOLICITUD_CREADA",
-        "INCIDENCIA_REPORTADA" -> TonoEstado.WARNING
+        "SOLICITUD_CANCELADA" ->
+            "La solicitud de préstamo fue cancelada."
 
-        else -> TonoEstado.INFO
+        "PRESTAMO_INICIADO" ->
+            "Se inició el préstamo de equipos."
+
+        "PRESTAMO_CANCELADO" ->
+            "El préstamo de equipos fue cancelado."
+
+        "DEVOLUCION_REGISTRADA" ->
+            "Se registró la devolución de los equipos prestados."
+
+        "INCIDENCIA_REPORTADA" ->
+            "Se registró una nueva incidencia en el laboratorio."
+
+        "INCIDENCIA_EN_PROCESO" ->
+            "El encargado comenzó a atender la incidencia."
+
+        "INCIDENCIA_RESUELTA" ->
+            "La incidencia fue marcada como resuelta."
+
+        else -> historial.descripcion
+            ?.takeIf { it.isNotBlank() }
+            ?: "Se registró una actividad."
     }
 
     // Categoría del registro
@@ -63,23 +84,6 @@ fun HistoryCard(
         else -> historial.tipoEntidad
     }
 
-    // Fecha enviada por Spring Boot:
-    // 2026-11-19T11:20:35.352344
-    val fechaOriginal = historial.fechaAccion
-        .substringBefore("T")
-
-    val partes = fechaOriginal.split("-")
-
-    val fecha = if (partes.size == 3) {
-        "${partes[2]}/${partes[1]}/${partes[0]}"
-    } else {
-        fechaOriginal
-    }
-
-    val hora = historial.fechaAccion
-        .substringAfter("T", "")
-        .take(5)
-        .ifBlank { "--:--" }
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -96,85 +100,73 @@ fun HistoryCard(
                 Arrangement.spacedBy(12.dp)
         ) {
 
-            // ENCABEZADO
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement =
-                    Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                Text(
+                    text = titulo,
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = TextDark
+                )
 
                 Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = PrimarySoft
+                    shape = RoundedCornerShape(50.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.History,
-                        contentDescription = null,
-                        tint = Primary,
-                        modifier = Modifier.padding(12.dp)
-                    )
-                }
-
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = titulo,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = TextDark
-                    )
-
                     Text(
                         text = categoria,
+                        modifier = Modifier.padding(
+                            horizontal = 10.dp,
+                            vertical = 4.dp
+                        ),
                         style = MaterialTheme.typography.labelSmall,
-                        color = TextMuted
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-
-                BadgeEstado(
-                    label = "Actividad",
-                    tone = tono
-                )
             }
 
             // DESCRIPCIÓN
-            if (!historial.descripcion.isNullOrBlank()) {
-                Text(
-                    text = historial.descripcion,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextBody
-                )
-            }
-
-            HorizontalDivider(color = Divider)
-
-            // RESPONSABLE DE LA ACCIÓN
             Text(
-                text = "Responsable: ${historial.nombreActor}",
+                text = detalle,
                 style = MaterialTheme.typography.bodyMedium,
-                color = TextDark
+                color = TextBody
             )
-
-            // MOSTRAR AFECTADO SOLO SI ES OTRA PERSONA
-            if (
-                !historial.actorEsAfectado &&
-                historial.nombreAfectado.isNotBlank()
-            ) {
-                Text(
-                    text = "Estudiante relacionado: " +
-                            historial.nombreAfectado,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextBody
-                )
-            }
 
             // FECHA Y HORA
             Text(
-                text = "$fecha · $hora",
-                style = MaterialTheme.typography.labelMedium,
+                text = historial.fechaAccionVisual,
+                style = MaterialTheme.typography.bodySmall,
                 color = TextMuted
             )
+
+            HorizontalDivider(color = Divider)
+
+            // ACCESO AL DETALLE
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(enabled = onVerDetalle != null) {
+                        onVerDetalle?.invoke(historial)
+                    }
+                    .padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Ver información completa",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextBody
+                )
+
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = TextMuted
+                )
+            }
         }
     }
 }

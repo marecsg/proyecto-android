@@ -1,5 +1,7 @@
 package com.pe.domain.model
 
+import com.pe.utils.FechaUtils.formatearFechaHora
+
 enum class EstadoPrestamo(val etiqueta: String) {
     PENDIENTE("Pendiente"),
     EN_CURSO("En curso"),
@@ -68,41 +70,9 @@ data class Prestamo(
             else -> "${detalles.first().nombreEquipo} (+${detalles.size - 1} más)"
         }
 
-    val fechaVisual: String
-        get() {
-            val partes = fechaInicioUso?.substringBefore('T')?.split('-')
-            return if (partes?.size == 3)
-                "${partes[2]}/${partes[1]}/${partes[0]}"
-            else fechaInicioUso ?: "--"
-        }
+    val fechaInicoVisual: String
+        get() = formatearFechaHora(fechaInicioUso)
 
-    val horaInicio: String
-        get() = fechaInicioUso?.substringAfter('T', "--:--")?.take(5) ?: "--:--"
-
-    val horaFin: String
-        get() = fechaFinUso?.substringAfter('T', "--:--")?.take(5) ?: "--:--"
-
-    val horarioPrestamo: String
-        get() = "${formatearFechaHora(fechaInicioUso)} → ${formatearFechaHora(fechaFinUso)}"
-
-    private fun formatearFechaHora(fechaIso: String?): String {
-        if (fechaIso.isNullOrBlank()) return "--"
-        val secciones = fechaIso.split("T")
-        if (secciones.size != 2) return fechaIso
-
-        val bloqueFecha = secciones[0].split("-")
-        val fechaFormateada = if (bloqueFecha.size == 3) {
-            "${bloqueFecha[2]}/${bloqueFecha[1]}/${bloqueFecha[0]}"
-        } else {
-            secciones[0]
-        }
-
-        val bloqueHora = secciones[1].split(":")
-        val hora24 = bloqueHora.getOrNull(0)?.toIntOrNull() ?: return fechaFormateada
-        val minutos = bloqueHora.getOrNull(1)?.padStart(2, '0') ?: "00"
-        val hora12 = if (hora24 % 12 == 0) 12 else hora24 % 12
-        val turno = if (hora24 < 12) "AM" else "PM"
-
-        return "$fechaFormateada $hora12:$minutos $turno"
-    }
+    val fechaFinVisual: String
+        get() = formatearFechaHora(fechaFinUso)
 }

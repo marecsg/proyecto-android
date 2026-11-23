@@ -243,10 +243,7 @@ private fun TarjetaIncidencia(
             }
 
             Text(
-                text = "Fecha: " +
-                        (incidencia.fechaReporte
-                            ?.substringBefore("T")
-                            ?: "No disponible"),
+                text = "Fecha: ${incidencia.fechaReporteVisual}",
                 style = MaterialTheme.typography.bodySmall,
                 color = TextMuted
             )

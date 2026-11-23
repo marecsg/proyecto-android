@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.pe.domain.model.Historial
 
 import com.pe.presentation.components.HistoryCard
 import com.pe.presentation.theme.*
@@ -21,7 +22,8 @@ fun HistoryContent(
     estado: HistorialUiState,
     esEncargado: Boolean,
     onRecargar: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onVerDetalle: ((Historial) -> Unit)? = null
 ) {
 
     Column(
@@ -176,7 +178,8 @@ fun HistoryContent(
                     ) { registro ->
 
                         HistoryCard(
-                            historial = registro
+                            historial = registro,
+                            onVerDetalle = onVerDetalle
                         )
                     }
                 }

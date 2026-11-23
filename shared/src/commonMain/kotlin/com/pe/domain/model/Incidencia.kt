@@ -1,5 +1,7 @@
 package com.pe.domain.model
 
+import com.pe.utils.FechaUtils.formatearFechaHora
+
 // Estados reales del backend
 enum class EstadoTicket(val etiqueta: String) {
     PENDIENTE("Pendiente"),
@@ -52,4 +54,10 @@ data class Incidencia(
     val respuestaEncargado: String?,
     val fechaResolucion: String?,
     val codigoCorrelativo: String? = null
-)
+){
+    val fechaReporteVisual: String
+        get() = formatearFechaHora(fechaReporte)
+
+    val fechaResolucionVisual: String
+        get() = formatearFechaHora(fechaResolucion)
+}
