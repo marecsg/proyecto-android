@@ -30,7 +30,9 @@ fun SolicitudesContent(
 ) {
 
     // FILTRO
-    val solicitudesFiltradas = solicitudes.filter { solicitud ->
+    val solicitudesFiltradas = solicitudes
+        .sortedByDescending { it.fechaSolicitud }
+        .filter { solicitud ->
 
         val coincideEquipo = solicitud.detalles.any { equipo ->
             equipo.nombreEquipo.contains(

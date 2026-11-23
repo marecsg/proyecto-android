@@ -6,10 +6,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Inventory2
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -18,11 +20,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.pe.domain.model.EstadoPrestamo
+import com.pe.domain.model.EstadoSolicitud
 import com.pe.domain.model.Prestamo
 import com.pe.domain.model.Solicitud
+import com.pe.presentation.components.Buscador
 import com.pe.presentation.components.PrestamoCard
 import com.pe.presentation.theme.*
 
+@OptIn(
+    ExperimentalMaterial3Api::class,
+    ExperimentalLayoutApi::class
+)
 @Composable
 fun PrestamosContent(
     solicitudes: List<Solicitud>,
@@ -48,51 +57,217 @@ fun PrestamosContent(
         mutableStateOf("")
     }
 
+    var estadoSeleccionado by remember {
+        mutableStateOf<String?>(null)
+    }
+
+    var ambienteSeleccionado by remember {
+        mutableStateOf<String?>(null)
+    }
+
+    // Panel inferior
+    var mostrarFiltros by remember {
+        mutableStateOf(false)
+    }
+
+    var borradorEstado by remember {
+        mutableStateOf<String?>(null)
+    }
+
+    var borradorAmbiente by remember {
+        mutableStateOf<String?>(null)
+    }
+
+    val estadosDisponibles = if (pestanaSeleccionada == 0) {
+        EstadoSolicitud.entries.map { it.name to it.etiqueta }
+    } else {
+        EstadoPrestamo.entries.map { it.name to it.etiqueta }
+    }
+
+    val ambientesDisponibles = (
+            if (pestanaSeleccionada == 0) {
+                solicitudes.map { it.nombreAmbiente }
+            } else {
+                prestamos.map { it.nombreAmbiente }
+            }
+            ).filter { it.isNotBlank() }.distinct().sorted()
+
+    val filtrosActivos =
+        (if (estadoSeleccionado != null) 1 else 0) +
+                (if (ambienteSeleccionado != null) 1 else 0)
+
+    // Filtros locales sobre los registros cargados
+    val solicitudesFiltradas = solicitudes.filter {
+        (estadoSeleccionado == null ||
+                it.estado.name == estadoSeleccionado) &&
+                (ambienteSeleccionado == null ||
+                        it.nombreAmbiente == ambienteSeleccionado)
+    }
+
+    val prestamosFiltrados = prestamos.filter {
+        (estadoSeleccionado == null ||
+                it.estado.name == estadoSeleccionado) &&
+                (ambienteSeleccionado == null ||
+                        it.nombreAmbiente == ambienteSeleccionado)
+    }.sortedByDescending { it.idPrestamo }
+
+
+
+    if (mostrarFiltros) {
+        ModalBottomSheet(
+            onDismissRequest = {
+                mostrarFiltros = false
+            },
+            containerColor = SurfaceWhite
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp)
+                    .padding(bottom = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        "Filtros",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = TextDark
+                    )
+
+                    TextButton(
+                        onClick = {
+                            borradorEstado = null
+                            borradorAmbiente = null
+                        }
+                    ) {
+                        Text("Limpiar")
+                    }
+                }
+
+                Text(
+                    "Estado",
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    FilterChip(
+                        selected = borradorEstado == null,
+                        onClick = { borradorEstado = null },
+                        label = { Text("Todos") }
+                    )
+
+                    estadosDisponibles.forEach { (valor, etiqueta) ->
+                        FilterChip(
+                            selected = borradorEstado == valor,
+                            onClick = { borradorEstado = valor },
+                            label = { Text(etiqueta) }
+                        )
+                    }
+                }
+
+                Text(
+                    "Ambiente",
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    FilterChip(
+                        selected = borradorAmbiente == null,
+                        onClick = { borradorAmbiente = null },
+                        label = { Text("Todos") }
+                    )
+
+                    ambientesDisponibles.forEach { ambiente ->
+                        FilterChip(
+                            selected = borradorAmbiente == ambiente,
+                            onClick = {
+                                borradorAmbiente = ambiente
+                            },
+                            label = { Text(ambiente) }
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                Button(
+                    onClick = {
+                        estadoSeleccionado = borradorEstado
+                        ambienteSeleccionado = borradorAmbiente
+                        mostrarFiltros = false
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Aplicar filtros")
+                }
+            }
+        }
+    }
+
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(BackgroundClean)
     ) {
-
-        // BUSCADOR
-        OutlinedTextField(
-            value = busqueda,
-            onValueChange = { busqueda = it },
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = 12.dp,
-                    bottom = 12.dp
+                    horizontal = 16.dp,
+                    vertical = 12.dp
                 ),
-            placeholder = {
-                Text(
-                    text = if (esEncargado) {
-                        "Buscar por nombre o código..."
-                    } else {
-                        "Buscar por equipo..."
-                    },
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextHint
-                )
-            },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = null,
-                    tint = TextMuted
-                )
-            },
-            singleLine = true,
-            shape = RoundedCornerShape(14.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = SurfaceWhite,
-                unfocusedContainerColor = SurfaceWhite,
-                focusedBorderColor = Primary,
-                unfocusedBorderColor = Border
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Buscador(
+                texto = busqueda,
+                onValueChange = { busqueda = it },
+                modifier = Modifier.weight(1f),
+                placeholder = if (pestanaSeleccionada == 0) {
+                    "Buscar solicitudes..."
+                } else {
+                    "Buscar préstamos..."
+                }
             )
-        )
+
+            BadgedBox(
+                badge = {
+                    if (filtrosActivos > 0) {
+                        Badge {
+                            Text(filtrosActivos.toString())
+                        }
+                    }
+                }
+            ) {
+                OutlinedIconButton(
+                    onClick = {
+                        borradorEstado = estadoSeleccionado
+                        borradorAmbiente = ambienteSeleccionado
+                        mostrarFiltros = true
+                    },
+                    modifier = Modifier.size(56.dp),
+                    shape = RoundedCornerShape(14.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Tune,
+                        contentDescription = "Abrir filtros",
+                        tint = if (filtrosActivos > 0)
+                            Primary else TextDark
+                    )
+                }
+            }
+        }
 
         // PESTAÑAS SOLICITUDES / PRÉSTAMOS
         Row(
@@ -115,6 +290,8 @@ fun PrestamosContent(
                 onClick = {
                     pestanaSeleccionada = 0
                     busqueda = ""
+                    estadoSeleccionado = null
+                    ambienteSeleccionado = null
                 }
             )
 
@@ -126,6 +303,8 @@ fun PrestamosContent(
                 onClick = {
                     pestanaSeleccionada = 1
                     busqueda = ""
+                    estadoSeleccionado = null
+                    ambienteSeleccionado = null
                 }
             )
         }
@@ -138,7 +317,7 @@ fun PrestamosContent(
             0 -> {
 
                 SolicitudesContent(
-                    solicitudes = solicitudes,
+                    solicitudes = solicitudesFiltradas,
                     busqueda = busqueda,
                     esEncargado = esEncargado,
                     codigosPorEstudiante = codigosPorEstudiante,
@@ -154,7 +333,7 @@ fun PrestamosContent(
             1 -> {
 
                 ListaPrestamos(
-                    prestamos = prestamos,
+                    prestamos = prestamosFiltrados,
                     busqueda = busqueda,
                     esEncargado = esEncargado,
                     cargando = cargandoPrestamos,

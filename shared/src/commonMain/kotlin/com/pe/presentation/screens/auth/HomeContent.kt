@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.Report
 import androidx.compose.material.icons.filled.Settings
@@ -53,221 +54,304 @@ fun HomeContent(
 
     ModalNavigationDrawer(
         drawerState = drawerState,
+
         drawerContent = {
             ModalDrawerSheet(
                 drawerContainerColor = SurfaceWhite
             ) {
-                // Encabezado del menú lateral
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Primary)
-                        .padding(24.dp),
-                    verticalArrangement = Arrangement.Center
+                    modifier = Modifier.fillMaxHeight()
                 ) {
-                    Text(
-                        text = "LabManager",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = TextLight
-                    )
+
+                    // ENCABEZADO DEL MENÚ
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Surface(
+                            color = PrimarySoft,
+                            shape = RoundedCornerShape(14.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier.size(48.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Devices,
+                                    contentDescription = null,
+                                    tint = Primary,
+                                    modifier = Modifier.size(26.dp)
+                                )
+                            }
+                        }
+
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(3.dp)
+                        ) {
+                            Text(
+                                text = "LabManager",
+                                style = MaterialTheme.typography.titleLarge,
+                                color = TextDark
+                            )
+
+                            Text(
+                                text = "Gestión de laboratorios",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = TextMuted
+                            )
+                        }
+                    }
+
+                    HorizontalDivider(color = Border)
 
                     Text(
-                        text = "Gestión de laboratorios",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextLight.copy(alpha = 0.8f)
+                        text = "MI CUENTA",
+                        modifier = Modifier.padding(
+                            start = 28.dp,
+                            top = 20.dp,
+                            bottom = 8.dp
+                        ),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = TextMuted
+                    )
+
+                    // MI PERFIL
+                    NavigationDrawerItem(
+                        label = { Text("Mi perfil") },
+                        selected = false,
+                        onClick = {
+                            scope.launch {
+                                drawerState.close()
+                                onEditProfile()
+                            }
+                        },
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = null
+                            )
+                        },
+                        modifier = Modifier.padding(horizontal = 12.dp)
+                    )
+
+                    // AJUSTES
+                    NavigationDrawerItem(
+                        label = { Text("Ajustes") },
+                        selected = false,
+                        onClick = {
+                            scope.launch {
+                                drawerState.close()
+                                onSettingsClick()
+                            }
+                        },
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Default.Settings,
+                                contentDescription = null
+                            )
+                        },
+                        modifier = Modifier.padding(horizontal = 12.dp)
+                    )
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = Border
+                    )
+
+                    // CERRAR SESIÓN
+                    NavigationDrawerItem(
+                        label = {
+                            Text(
+                                text = "Cerrar sesión",
+                                color = ErrorText
+                            )
+                        },
+                        selected = false,
+                        onClick = {
+                            scope.launch {
+                                drawerState.close()
+                                onLogout()
+                            }
+                        },
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Default.ExitToApp,
+                                contentDescription = null,
+                                tint = ErrorText
+                            )
+                        },
+                        modifier = Modifier
+                            .padding(horizontal = 12.dp, vertical = 12.dp)
                     )
                 }
-
-                Spacer(Modifier.height(12.dp))
-
-                NavigationDrawerItem(
-                    label = {
-                        Text("Mi perfil")
-                    },
-                    selected = false,
-                    onClick = {
-                        scope.launch {
-                            drawerState.close()
-                        }
-
-                        onEditProfile()
-                    },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = null
-                        )
-                    }
-                )
-
-                NavigationDrawerItem(
-                    label = { Text("Ajustes") },
-                    selected = false,
-                    onClick = { scope.launch { drawerState.close(); onSettingsClick() } },
-                    icon = { Icon(Icons.Default.Settings, null) }
-                )
-
-                HorizontalDivider(
-                    modifier = Modifier.padding(
-                        vertical = 8.dp
-                    )
-                )
-
-                NavigationDrawerItem(
-                    label = {
-                        Text("Cerrar sesión")
-                    },
-                    selected = false,
-                    onClick = {
-                        scope.launch {
-                            drawerState.close()
-                        }
-
-                        onLogout()
-                    },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.ExitToApp,
-                            contentDescription = null
-                        )
-                    }
-                )
             }
         }
+
     ) {
         Scaffold(
             containerColor = BackgroundClean,
 
-            // BARRA SUPERIOR
+
+            // BARRA SUPERIOR MODERNIZADA
             topBar = {
-                TopAppBar(
-                    title = {
-                        Text(
-                            text = titulo,
-                            style = MaterialTheme.typography.titleLarge,
-                            color = TextDark
-                        )
-                    },
-                    navigationIcon = {
-                        IconButton(
-                            onClick = {
-                                scope.launch {
-                                    drawerState.open()
+                Column {
+                    TopAppBar(
+                        title = {
+                            Column(
+                                verticalArrangement =
+                                    Arrangement.spacedBy(2.dp)
+                            ) {
+                                Text(
+                                    text = "LABMANAGER",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = Primary
+                                )
+
+                                Text(
+                                    text = titulo,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = TextDark
+                                )
+                            }
+                        },
+
+                        navigationIcon = {
+                            IconButton(
+                                onClick = {
+                                    scope.launch {
+                                        drawerState.open()
+                                    }
+                                }
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(38.dp)
+                                        .background(
+                                            PrimarySoft,
+                                            RoundedCornerShape(12.dp)
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Menu,
+                                        contentDescription = "Abrir menú",
+                                        tint = Primary
+                                    )
                                 }
                             }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Menu,
-                                contentDescription = "Abrir menú",
-                                tint = TextDark
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = BackgroundClean
-                    )
-                )
-            },
+                        },
 
-            // NAVEGACIÓN INFERIOR
-            bottomBar = {
-                NavigationBar(
-                    containerColor = SurfaceWhite,
-                    tonalElevation = 0.dp
-                ) {
-                    NavigationBarItem(
-                        selected = selectedTab == 0,
-                        onClick = {
-                            onTabSelected(0)
+                        actions = {
+                            IconButton(
+                                onClick = onEditProfile
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(38.dp)
+                                        .background(
+                                            PrimarySoft,
+                                            RoundedCornerShape(50.dp)
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Person,
+                                        contentDescription = "Mi perfil",
+                                        tint = Primary
+                                    )
+                                }
+                            }
                         },
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Default.Devices,
-                                contentDescription = "Equipos"
-                            )
-                        },
-                        label = {
-                            Text("Equipos")
-                        }
+
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = SurfaceWhite
+                        )
                     )
 
-                    NavigationBarItem(
-                        selected = selectedTab == 1,
-                        onClick = {
-                            onTabSelected(1)
-                        },
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Default.Receipt,
-                                contentDescription = "Préstamos"
-                            )
-                        },
-                        label = {
-                            Text("Préstamos")
-                        }
-                    )
-
-                    NavigationBarItem(
-                        selected = selectedTab == 2,
-                        onClick = {
-                            onTabSelected(2)
-                        },
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Default.Report,
-                                contentDescription = "Incidencias"
-                            )
-                        },
-                        label = {
-                            Text("Incidencias")
-                        }
-                    )
-
-                    NavigationBarItem(
-                        selected = selectedTab == 3,
-                        onClick = {
-                            onTabSelected(3)
-                        },
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Default.History,
-                                contentDescription = "Historial"
-                            )
-                        },
-                        label = {
-                            Text("Historial")
-                        }
+                    HorizontalDivider(
+                        thickness = 1.dp,
+                        color = Border
                     )
                 }
             },
 
-            // BOTÓN PARA ESCANEAR QR
+
+
+            // NAVEGACIÓN INFERIOR MODERNIZADA
+            bottomBar = {
+                Column {
+                    HorizontalDivider(
+                        thickness = 1.dp,
+                        color = Border
+                    )
+
+                    NavigationBar(
+                        containerColor = SurfaceWhite,
+                        tonalElevation = 0.dp
+                    ) {
+                        val pestañas = listOf(
+                            "Equipos" to Icons.Default.Devices,
+                            "Préstamos" to Icons.Default.Receipt,
+                            "Incidencias" to Icons.Default.Report,
+                            "Historial" to Icons.Default.History
+                        )
+
+                        pestañas.forEachIndexed { indice, pestaña ->
+                            NavigationBarItem(
+                                selected = selectedTab == indice,
+                                onClick = {
+                                    onTabSelected(indice)
+                                },
+                                icon = {
+                                    Icon(
+                                        imageVector = pestaña.second,
+                                        contentDescription = pestaña.first,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                },
+                                label = {
+                                    Text(
+                                        text = pestaña.first,
+                                        style = MaterialTheme.typography.labelSmall
+                                    )
+                                },
+                                alwaysShowLabel = true,
+                                colors = NavigationBarItemDefaults.colors(
+                                    selectedIconColor = Primary,
+                                    selectedTextColor = Primary,
+                                    indicatorColor = PrimaryContainer,
+                                    unselectedIconColor = TextMuted,
+                                    unselectedTextColor = TextMuted
+                                )
+                            )
+                        }
+                    }
+                }
+            },
+
+
+
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = onScanQr,
+                    modifier = Modifier.size(56.dp),
                     containerColor = Primary,
                     contentColor = TextLight,
                     shape = RoundedCornerShape(16.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.padding(
-                            horizontal = 16.dp
-                        ),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.CameraAlt,
-                            contentDescription = null
-                        )
-
-                        Text(
-                            text = "Escanear",
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Default.QrCodeScanner,
+                        contentDescription = "Escanear código QR",
+                        modifier = Modifier.size(26.dp)
+                    )
                 }
             }
+
         ) { paddingValues ->
 
             // CONTENEDOR DINÁMICO

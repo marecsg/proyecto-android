@@ -351,33 +351,44 @@ fun CrearSolicitudContent(
                     }
                 }
 
-
-                Column(modifier = Modifier.weight(1f)) {
+                Column(modifier = Modifier.weight(1.8f)) {
                     Text("Hora de inicio")
-                    OutlinedTextField(
-                        value = horaInicio,
-                        onValueChange = {
-                            horaInicio = formatearHora(it)
-                        },
-                        placeholder = { Text("08:00") },
-                        singleLine = true,
-                        visualTransformation = HoraVisualTransformation,
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Number
-                        )
-                    )
+
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
+                        OutlinedTextField(
+                            value = horaInicio,
+                            onValueChange = {
+                                horaInicio = formatearHora(it)
+                            },
+                            modifier = Modifier.weight(1f),
+                            placeholder = { Text("08:00") },
+                            singleLine = true,
+                            visualTransformation = HoraVisualTransformation,
+                            textStyle = MaterialTheme.typography.bodySmall,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number
+                            )
+                        )
+
                         listOf("AM", "PM").forEach { periodo ->
                             FilterChip(
                                 selected = periodoInicio == periodo,
                                 onClick = { periodoInicio = periodo },
-                                label = { Text(periodo) }
+                                label = {
+                                    Text(
+                                        periodo,
+                                        style = MaterialTheme.typography.labelSmall
+                                    )
+                                }
                             )
                         }
                     }
                 }
+
             }
 
             Row(
@@ -393,32 +404,45 @@ fun CrearSolicitudContent(
                     }
                 }
 
-                Column(modifier = Modifier.weight(1f)) {
+
+                Column(modifier = Modifier.weight(1.8f)) {
                     Text("Hora de devolución")
-                    OutlinedTextField(
-                        value = horaFin,
-                        onValueChange = {
-                            horaFin = formatearHora(it)
-                        },
-                        placeholder = { Text("10:00") },
-                        singleLine = true,
-                        visualTransformation = HoraVisualTransformation,
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Number
-                        )
-                    )
+
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
+                        OutlinedTextField(
+                            value = horaFin,
+                            onValueChange = {
+                                horaFin = formatearHora(it)
+                            },
+                            modifier = Modifier.weight(1f),
+                            placeholder = { Text("10:00") },
+                            singleLine = true,
+                            visualTransformation = HoraVisualTransformation,
+                            textStyle = MaterialTheme.typography.bodySmall,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number
+                            )
+                        )
+
                         listOf("AM", "PM").forEach { periodo ->
                             FilterChip(
                                 selected = periodoFin == periodo,
                                 onClick = { periodoFin = periodo },
-                                label = { Text(periodo) }
+                                label = {
+                                    Text(
+                                        periodo,
+                                        style = MaterialTheme.typography.labelSmall
+                                    )
+                                }
                             )
                         }
                     }
                 }
+
             }
 
             if (inicio != null && fin != null && !fechasValidas) {

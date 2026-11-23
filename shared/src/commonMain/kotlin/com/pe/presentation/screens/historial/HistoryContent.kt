@@ -2,14 +2,13 @@
 package com.pe.presentation.screens.historial
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,10 +17,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 import com.pe.domain.model.Historial
+import com.pe.presentation.components.Buscador
 import com.pe.presentation.components.HistoryCard
 import com.pe.presentation.theme.*
 import com.pe.presentation.viewmodel.HistorialUiState
 
+@OptIn(
+    ExperimentalMaterial3Api::class,
+    ExperimentalLayoutApi::class
+)
 @Composable
 fun HistoryContent(
     estado: HistorialUiState,
@@ -34,12 +38,97 @@ fun HistoryContent(
         mutableStateOf<String?>(null)
     }
 
-    val filtros = listOf(
+    var busqueda by remember {
+        mutableStateOf("")
+    }
+
+    var mostrarFiltros by remember {
+        mutableStateOf(false)
+    }
+
+    var borradorFiltro by remember {
+        mutableStateOf<String?>(null)
+    }
+
+    val filtros: List<Pair<String, String?>> = listOf(
         "Todas" to null,
         "Solicitudes" to "SOLICITUD",
         "Préstamos" to "PRESTAMO",
         "Incidencias" to "INCIDENCIA"
     )
+
+
+    if (mostrarFiltros) {
+        ModalBottomSheet(
+            onDismissRequest = {
+                mostrarFiltros = false
+            },
+            containerColor = SurfaceWhite
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .padding(bottom = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Filtros",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = TextDark
+                    )
+
+                    TextButton(
+                        onClick = {
+                            borradorFiltro = null
+                        }
+                    ) {
+                        Text("Limpiar")
+                    }
+                }
+
+                Text(
+                    text = "Tipo de actividad",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = TextDark
+                )
+
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    filtros.forEach { opcion ->
+                        FilterChip(
+                            selected = borradorFiltro == opcion.second,
+                            onClick = {
+                                borradorFiltro = opcion.second
+                            },
+                            label = {
+                                Text(opcion.first)
+                            }
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                Button(
+                    onClick = {
+                        filtroSeleccionado = borradorFiltro
+                        mostrarFiltros = false
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Aplicar filtros")
+                }
+            }
+        }
+    }
+
 
     Column(
         modifier = modifier
@@ -182,36 +271,84 @@ fun HistoryContent(
 
             is HistorialUiState.Success -> {
 
+
                 val registrosFiltrados = estado.historial
                     .filter { registro ->
-                        filtroSeleccionado == null ||
-                                registro.tipoEntidad.equals(
-                                    filtroSeleccionado,
-                                    ignoreCase = true
-                                )
+
+                        val coincideTipo =
+                            filtroSeleccionado == null ||
+                                    registro.tipoEntidad.equals(
+                                        filtroSeleccionado,
+                                        ignoreCase = true
+                                    )
+
+                        val consulta = busqueda.trim()
+
+                        val coincideBusqueda =
+                            consulta.isBlank() ||
+                                    registro.tipoAccion
+                                        .replace("_", " ")
+                                        .contains(consulta, ignoreCase = true) ||
+                                    registro.descripcion.orEmpty()
+                                        .contains(consulta, ignoreCase = true) ||
+                                    registro.tipoEntidad
+                                        .contains(consulta, ignoreCase = true) ||
+                                    registro.fechaAccionVisual
+                                        .contains(consulta, ignoreCase = true)
+
+                        coincideTipo && coincideBusqueda
                     }
                     .sortedByDescending { it.fechaAccion }
 
-                // FILTROS
+
+                // BUSCADOR + FILTROS
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState())
-                        .padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        .padding(
+                            horizontal = 16.dp,
+                            vertical = 8.dp
+                        ),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    filtros.forEach { (titulo, valor) ->
-                        FilterChip(
-                            selected = filtroSeleccionado == valor,
-                            onClick = {
-                                filtroSeleccionado = valor
-                            },
-                            label = {
-                                Text(titulo)
+                    Buscador(
+                        texto = busqueda,
+                        onValueChange = {
+                            busqueda = it
+                        },
+                        modifier = Modifier.weight(1f),
+                        placeholder = "Buscar actividades..."
+                    )
+
+                    BadgedBox(
+                        badge = {
+                            if (filtroSeleccionado != null) {
+                                Badge {
+                                    Text("1")
+                                }
                             }
-                        )
+                        }
+                    ) {
+                        OutlinedIconButton(
+                            onClick = {
+                                borradorFiltro = filtroSeleccionado
+                                mostrarFiltros = true
+                            },
+                            modifier = Modifier.size(56.dp),
+                            shape = androidx.compose.foundation.shape
+                                .RoundedCornerShape(14.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Tune,
+                                contentDescription = "Abrir filtros",
+                                tint = if (filtroSeleccionado != null)
+                                    Primary else TextDark
+                            )
+                        }
                     }
                 }
+
 
                 Text(
                     text = "${registrosFiltrados.size} actividades",
