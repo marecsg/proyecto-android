@@ -1,6 +1,7 @@
 
 package com.pe.presentation.screens.incidencias
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -10,12 +11,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 import com.pe.domain.model.Incidencia
 import com.pe.domain.model.EstadoTicket
 import com.pe.presentation.components.BadgeEstado
+import com.pe.presentation.components.BotonPrincipal
 import com.pe.presentation.components.TonoEstado
 import com.pe.presentation.theme.*
 
@@ -127,14 +130,18 @@ fun DetalleIncidenciaContent(
                         .padding(16.dp)
                 ) {
 
-                    Button(
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = !procesando &&
-                                (
-                                        puedeIniciar ||
-                                                (puedeResolver &&
-                                                        respuesta.isNotBlank())
-                                        ),
+
+                    BotonPrincipal(
+                        texto = if (procesando) {
+                            "Procesando..."
+                        } else if (puedeIniciar) {
+                            "Poner en proceso"
+                        } else {
+                            "Resolver incidencia"
+                        },
+                        habilitado = !procesando &&
+                                (puedeIniciar ||
+                                        (puedeResolver && respuesta.isNotBlank())),
                         onClick = {
                             when {
                                 puedeIniciar -> {
@@ -149,24 +156,9 @@ fun DetalleIncidenciaContent(
                                     confirmarResolucion = true
                                 }
                             }
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Primary
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        if (procesando) {
-                            Text("Procesando...")
-                        } else {
-                            Text(
-                                if (puedeIniciar) {
-                                    "Poner en proceso"
-                                } else {
-                                    "Resolver incidencia"
-                                }
-                            )
                         }
-                    }
+                    )
+
                 }
             }
         }
@@ -181,44 +173,73 @@ fun DetalleIncidenciaContent(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
+
             // IDENTIFICACIÓN Y ESTADO
             Card(
                 modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = SurfaceWhite
                 ),
-                shape = RoundedCornerShape(16.dp)
+                border = BorderStroke(1.dp, Border)
             ) {
-
                 Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement =
-                        Arrangement.spacedBy(12.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
 
-                    Text(
-                        text = incidencia.codigoCorrelativo?.takeIf { it.isNotBlank() } ?: "----",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = TextDark
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = "INCIDENCIA REPORTADA",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = TextMuted
+                            )
 
-                    BadgeEstado(
-                        label = estado.etiqueta,
-                        tone = tono
-                    )
+                            Text(
+                                text = incidencia.codigoCorrelativo
+                                    ?.takeIf { it.isNotBlank() } ?: "----",
+                                style = MaterialTheme.typography.titleLarge,
+                                color = TextDark
+                            )
+                        }
 
-                    HorizontalDivider()
+                        BadgeEstado(
+                            label = estado.etiqueta,
+                            tone = tono
+                        )
+                    }
 
-                    DatoIncidencia(
-                        "Tipo de incidencia",
-                        incidencia.tipoIncidencia.etiqueta
-                    )
+                    HorizontalDivider(color = Divider)
 
-                    DatoIncidencia(
-                        "Laboratorio",
-                        incidencia.nombreAmbiente
-                            ?: "No disponible"
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            DatoIncidencia(
+                                "Tipo de incidencia",
+                                incidencia.tipoIncidencia.etiqueta
+                            )
+                        }
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            DatoIncidencia(
+                                "Laboratorio",
+                                incidencia.nombreAmbiente
+                                    ?: "No disponible"
+                            )
+                        }
+                    }
 
                     DatoIncidencia(
                         "Equipo",
@@ -226,11 +247,15 @@ fun DetalleIncidenciaContent(
                             ?: "Sin equipo asociado"
                     )
 
-                    DatoIncidencia(
-                        "Reportado por",
-                        incidencia.nombreUsuarioReporta
-                            ?: "No disponible"
-                    )
+                    if (esEncargado) {
+                        DatoIncidencia(
+                            "Reportado por",
+                            incidencia.nombreUsuarioReporta
+                                ?: "No disponible"
+                        )
+                    }
+
+                    HorizontalDivider(color = Divider)
 
                     DatoIncidencia(
                         "Fecha del reporte",
@@ -239,13 +264,15 @@ fun DetalleIncidenciaContent(
                 }
             }
 
+
             // DESCRIPCIÓN
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
                     containerColor = SurfaceWhite
                 ),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(16.dp),
+                border = BorderStroke(1.dp, Border)
             ) {
 
                 Column(
@@ -276,7 +303,8 @@ fun DetalleIncidenciaContent(
                     colors = CardDefaults.cardColors(
                         containerColor = SurfaceWhite
                     ),
-                    shape = RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, Border)
                 ) {
 
                     Column(
@@ -326,7 +354,8 @@ fun DetalleIncidenciaContent(
                     colors = CardDefaults.cardColors(
                         containerColor = SuccessContainer
                     ),
-                    shape = RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, Border)
                 ) {
 
                     Column(

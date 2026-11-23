@@ -283,6 +283,7 @@ fun App(
                                     when (pestana) {
                                         0 -> EquipoContent(
                                             equipos = equipoState.equipos,
+                                            esEncargado = usuario.esEncargado,
                                             ambientes = equipoState.equipos
                                                 .distinctBy { it.idAmbiente }
                                                 .map { OpcionAmbiente(it.idAmbiente, it.nombreAmbiente) },
@@ -363,6 +364,42 @@ fun App(
                                             esEncargado = usuario.esEncargado,
                                             onRecargar = {
                                                 historialViewModel.cargarHistorial(usuario)
+                                            },
+                                            onVerDetalle = { registro ->
+
+                                                when (registro.tipoEntidad.uppercase()) {
+
+                                                    "SOLICITUD" -> {
+                                                        idSolicitudDetalle = registro.idEntidad
+                                                        solicitudViewModel.clearError()
+                                                        solicitudViewModel.cargarDetalle(
+                                                            registro.idEntidad
+                                                        )
+                                                        pantalla = Screen.DetalleSolicitud
+                                                    }
+
+                                                    "PRESTAMO" -> {
+                                                        idPrestamoDetalle = registro.idEntidad
+                                                        prestamoViewModel.clearError()
+                                                        prestamoViewModel.cargarDetalle(
+                                                            registro.idEntidad
+                                                        )
+                                                        pantalla = Screen.DetallePrestamo
+                                                    }
+
+                                                    "INCIDENCIA" -> {
+                                                        idIncidenciaDetalle = registro.idEntidad
+                                                        incidenciaViewModel.clearError()
+                                                        incidenciaViewModel.cargarDetalle(
+                                                            registro.idEntidad
+                                                        )
+                                                        pantalla = Screen.DetalleIncidencia
+                                                    }
+
+                                                    else -> {
+                                                        aviso = "No hay detalle disponible para esta actividad."
+                                                    }
+                                                }
                                             }
                                         )
 
@@ -386,6 +423,7 @@ fun App(
                         } else {
                             DetalleEquipoContent(
                                 equipo = equipo,
+                                esEncargado = usuario?.esEncargado == true,
                                 onBack = { pantalla = Screen.Home },
                                 onRequestLoan = {
                                     if (usuario?.esEncargado == true) {
@@ -719,10 +757,20 @@ fun App(
                     }
 
 
-                    Screen.ProfileUpdate -> ProfileUpdateContent(
-                        onBack = { pantalla = Screen.Home },
-                        onSave = { pantalla = Screen.Home }
-                    )
+                    Screen.ProfileUpdate -> {
+                        if (usuario != null) {
+                            ProfileUpdateContent(
+                                usuario = usuario,
+                                onBack = {
+                                    pantalla = Screen.Home
+                                }
+                            )
+                        } else {
+                            LaunchedEffect(Unit) {
+                                pantalla = Screen.Login
+                            }
+                        }
+                    }
 
                     else -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         TextButton(onClick = { pantalla = Screen.Home }) {

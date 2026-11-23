@@ -84,7 +84,7 @@ val appModule = module {
 
     // VIEWMODELS
     viewModel {
-        AuthViewModel(get(), get())
+        AuthViewModel(get(), get(), get())
     }
 
     viewModel {

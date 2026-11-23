@@ -3,18 +3,17 @@ package com.pe.presentation.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Devices
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
 import com.pe.domain.model.Solicitud
@@ -27,8 +26,19 @@ fun SolicitudCard(
     modifier: Modifier = Modifier,
     mostrarEstudiante: Boolean = false,
     codigoEstudiante: String? = null
-
 ) {
+
+    val resumenEquipos = when (solicitud.detalles.size) {
+        0 -> "Sin equipos"
+        1 -> solicitud.detalles.first().nombreEquipo
+        else -> "${solicitud.detalles.first().nombreEquipo} " +
+                "(+${solicitud.detalles.size - 1} más)"
+    }
+
+    val codigoAlumno = codigoEstudiante
+        ?.takeIf { it.isNotBlank() }
+        ?: solicitud.codigoEstudiante.takeIf { it.isNotBlank() }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -42,27 +52,36 @@ fun SolicitudCard(
         border = BorderStroke(1.dp, Border)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+
+            // IDENTIFICACIÓN Y ESTADO
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Column(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
-                        text = solicitud.codigoCorrelativo?.takeIf { it.isNotBlank() } ?: "----",
+                        text = solicitud.codigoCorrelativo
+                            ?.takeIf { it.isNotBlank() } ?: "----",
                         style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
                         color = TextDark
                     )
 
                     Text(
                         text = solicitud.nombreAmbiente,
                         style = MaterialTheme.typography.labelSmall,
-                        color = TextMuted
+                        color = TextMuted,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
 
@@ -72,17 +91,20 @@ fun SolicitudCard(
                 )
             }
 
+            // ESTUDIANTE: SOLO PARA ENCARGADOS
             if (mostrarEstudiante) {
-                Column {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(3.dp)
+                ) {
                     Text(
                         text = solicitud.nombreEstudiante,
                         style = MaterialTheme.typography.bodyMedium,
                         color = TextDark
                     )
 
-                    if (!codigoEstudiante.isNullOrBlank()) {
+                    if (codigoAlumno != null) {
                         Text(
-                            text = "Cód. $codigoEstudiante",
+                            text = "Cód. $codigoAlumno",
                             style = MaterialTheme.typography.labelSmall,
                             color = TextMuted
                         )
@@ -90,41 +112,91 @@ fun SolicitudCard(
                 }
             }
 
-            Text(
-                text = when (solicitud.detalles.size) {
-                    0 -> "Sin equipos"
-                    1 -> solicitud.detalles.first().nombreEquipo
-                    else -> "${solicitud.detalles.first().nombreEquipo} " +
-                            "(+${solicitud.detalles.size - 1} más)"
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                color = TextDark
-            )
+            HorizontalDivider(color = Divider)
 
-            Text(
-                text = solicitud.motivoSolicitud,
-                style = MaterialTheme.typography.bodyMedium,
-                color = TextMuted,
-                maxLines = 2
-            )
+            // RESUMEN DE EQUIPOS
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Devices,
+                    contentDescription = null,
+                    tint = Primary,
+                    modifier = Modifier.size(24.dp)
+                )
 
-            Text(
-                text = "Inicio: ${solicitud.inicioReservaVisual}",
-                style = MaterialTheme.typography.labelSmall,
-                color = TextBody
-            )
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(3.dp)
+                ) {
+                    Text(
+                        text = resumenEquipos,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextDark,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
 
-            Text(
-                text = "Fin: ${solicitud.finReservaVisual}",
-                style = MaterialTheme.typography.labelSmall,
-                color = TextBody
-            )
+                    Text(
+                        text = "${solicitud.detalles.size} equipo(s)",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = TextMuted
+                    )
+                }
 
-            Text(
-                text = "Ver detalle",
-                style = MaterialTheme.typography.labelMedium,
-                color = Primary
-            )
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = "Ver detalle",
+                    tint = TextMuted
+                )
+            }
+
+            HorizontalDivider(color = Divider)
+
+            // PERÍODO DE RESERVA
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = "Retiro previsto",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = TextMuted
+                    )
+
+                    Text(
+                        text = solicitud.inicioReservaVisual,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextDark,
+                        maxLines = 2
+                    )
+                }
+
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = "Devolución prevista",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = TextMuted
+                    )
+
+                    Text(
+                        text = solicitud.finReservaVisual,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextDark,
+                        maxLines = 2
+                    )
+                }
+            }
         }
     }
 }

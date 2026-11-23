@@ -27,7 +27,8 @@ fun DetalleEquipoContent(
     equipo: Equipo,
     onBack: () -> Unit,
     onRequestLoan: () -> Unit,
-    onReportIncident: () -> Unit
+    onReportIncident: () -> Unit,
+    esEncargado: Boolean,
 ) {
     Scaffold(
         containerColor = BackgroundClean,
@@ -120,6 +121,7 @@ fun DetalleEquipoContent(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
 
+
             // TARJETA PRINCIPAL
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -129,43 +131,62 @@ fun DetalleEquipoContent(
                 ),
                 border = BorderStroke(1.dp, Border)
             ) {
-                Column(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                    verticalAlignment = Alignment.Top
                 ) {
-
                     Box(
                         modifier = Modifier
-                            .size(72.dp)
+                            .size(56.dp)
                             .background(
                                 PrimarySoft,
-                                RoundedCornerShape(16.dp)
+                                RoundedCornerShape(14.dp)
                             ),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Devices,
                             contentDescription = null,
-                            modifier = Modifier.size(36.dp),
-                            tint = Primary
+                            tint = Primary,
+                            modifier = Modifier.size(30.dp)
                         )
                     }
 
-                    Text(
-                        text = equipo.nombre,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = TextDark
-                    )
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "EQUIPO DE LABORATORIO",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = TextMuted
+                        )
 
-                    BadgeEstado(
-                        label = equipo.disponibilidad.etiqueta,
-                        tone = equipo.disponibilidad.toTono()
-                    )
+                        Text(
+                            text = equipo.nombre,
+                            style = MaterialTheme.typography.titleLarge,
+                            color = TextDark
+                        )
+
+                        if (esEncargado) {
+                            Text(
+                                text = "Código: ${equipo.codigoQr}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = TextMuted
+                            )
+                        }
+
+                        BadgeEstado(
+                            label = equipo.disponibilidad.etiqueta,
+                            tone = equipo.disponibilidad.toTono()
+                        )
+                    }
                 }
             }
+
 
             // DESCRIPCIÓN
             Card(
@@ -209,6 +230,15 @@ fun DetalleEquipoContent(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
+
+                    Text(
+                        text = "Información del equipo",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = TextDark
+                    )
+
+                    HorizontalDivider(color = Divider)
+
                     DatoEquipo(
                         titulo = "Ubicación",
                         valor = equipo.nombreAmbiente,
@@ -245,18 +275,6 @@ fun DetalleEquipoContent(
                     )
 
                     HorizontalDivider(color = Divider)
-
-                    DatoEquipo(
-                        titulo = "Código",
-                        valor = equipo.codigoQr,
-                        icono = {
-                            Icon(
-                                Icons.Default.QrCode,
-                                contentDescription = null,
-                                tint = Primary
-                            )
-                        }
-                    )
                 }
             }
 

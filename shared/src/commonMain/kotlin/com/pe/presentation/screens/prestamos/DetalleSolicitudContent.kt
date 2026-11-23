@@ -247,14 +247,21 @@ fun DetalleSolicitudContent(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
                             Text(
-                                text = solicitud.codigoCorrelativo?.takeIf { it.isNotBlank() } ?: "----",
+                                text = "SOLICITUD DE PRÉSTAMO",
                                 color = TextMuted,
                                 style = MaterialTheme.typography.labelSmall
                             )
-                            Text("${solicitud.detalles.size} equipo(s)", color = TextDark,
-                                style = MaterialTheme.typography.titleLarge)
+                            Text(
+                                text = solicitud.codigoCorrelativo
+                                    ?.takeIf { it.isNotBlank() } ?: "----",
+                                color = TextDark,
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                         BadgeEstado(
                             label = solicitud.estado.etiqueta,
@@ -270,12 +277,6 @@ fun DetalleSolicitudContent(
                             "Devolución prevista", solicitud.finReservaVisual,
                             Modifier.weight(1f)
                         )
-                    }
-                    Text("Enviada: ${solicitud.fechaSolicitudVisual}", color = TextMuted,
-                        style = MaterialTheme.typography.labelSmall)
-                    if (solicitud.fechaRespuesta != null) {
-                        Text("Respondida: ${solicitud.fechaRespuestaVisual}", color = TextMuted,
-                            style = MaterialTheme.typography.labelSmall)
                     }
                 }
             }
@@ -314,8 +315,57 @@ fun DetalleSolicitudContent(
 
             item {
                 TarjetaDetalleSolicitud {
-                    Text("Equipos (${solicitud.detalles.size})",
-                        style = MaterialTheme.typography.titleMedium, color = TextDark)
+                    Text(
+                        text = "Equipos solicitados (${solicitud.detalles.size})",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = TextDark
+                    )
+
+                    solicitud.detalles.forEachIndexed { index, equipo ->
+
+                        if (index > 0) {
+                            HorizontalDivider(color = Divider)
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .background(
+                                        PrimarySoft,
+                                        RoundedCornerShape(12.dp)
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Devices,
+                                    contentDescription = null,
+                                    tint = Primary
+                                )
+                            }
+
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    text = equipo.nombreEquipo,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = TextDark,
+                                    fontWeight = FontWeight.Medium
+                                )
+
+                                Text(
+                                    text = equipo.codigoQrEquipo,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = TextMuted
+                                )
+                            }
+                        }
+                    }
                 }
             }
             items(solicitud.detalles, key = { it.idEquipo }) { equipo ->

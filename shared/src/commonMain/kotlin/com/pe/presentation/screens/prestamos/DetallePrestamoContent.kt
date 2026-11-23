@@ -23,7 +23,9 @@ import com.pe.domain.model.EstadoItem
 import com.pe.domain.model.EstadoPrestamo
 import com.pe.domain.model.Prestamo
 import com.pe.domain.model.Solicitud
+import com.pe.presentation.components.BadgeEstado
 import com.pe.presentation.components.BotonPrincipal
+import com.pe.presentation.components.toTono
 import com.pe.presentation.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -241,111 +243,62 @@ fun DetallePrestamoContent(
 
             // INFORMACIÓN GENERAL DEL PRÉSTAMO
             SeccionPrestamo {
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
-                    Column {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
                         Text(
-                            prestamo.codigoCorrelativo?.takeIf { it.isNotBlank() } ?: "----",
-                            style = MaterialTheme.typography.labelMedium,
+                            text = "PRÉSTAMO DE EQUIPOS",
+                            style = MaterialTheme.typography.labelSmall,
                             color = TextMuted
                         )
 
                         Text(
-                            "${prestamo.detalles.size} equipo(s)",
+                            text = prestamo.codigoCorrelativo
+                                ?.takeIf { it.isNotBlank() } ?: "----",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = TextDark
                         )
                     }
 
-                    Surface(
-                        color = when (prestamo.estado) {
-                            EstadoPrestamo.FINALIZADO -> SuccessContainer
-                            EstadoPrestamo.CANCELADO -> ErrorContainer
-                            EstadoPrestamo.EN_CURSO -> PrimaryContainer
-                            else -> WarningContainer
-                        },
-                        shape = RoundedCornerShape(20.dp)
-                    ) {
-                        Text(
-                            prestamo.estado.etiqueta,
-                            modifier = Modifier.padding(
-                                horizontal = 10.dp,
-                                vertical = 5.dp
-                            ),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = when (prestamo.estado) {
-                                EstadoPrestamo.FINALIZADO -> SuccessText
-                                EstadoPrestamo.CANCELADO -> ErrorText
-                                EstadoPrestamo.EN_CURSO -> Primary
-                                else -> WarningText
-                            }
-                        )
-                    }
+                    BadgeEstado(
+                        label = prestamo.estado.etiqueta,
+                        tone = prestamo.estado.toTono()
+                    )
                 }
 
                 Text(
-                    "Ambiente: ${prestamo.nombreAmbiente}",
-                    color = TextBody,
-                    style = MaterialTheme.typography.bodyMedium
+                    text = prestamo.nombreAmbiente,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextMuted
                 )
 
-                HorizontalDivider(color = Divider)
-
-                // Fechas de reserva de la solicitud
                 if (solicitud != null) {
-                    TextoDato(
-                        "Retiro previsto",
-                        solicitud.inicioReservaVisual
+                    HorizontalDivider(color = Divider)
+
+                    Text(
+                        text = "Período programado",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = TextDark,
+                        fontWeight = FontWeight.SemiBold
                     )
 
                     TextoDato(
-                        "Devolución prevista",
-                        solicitud.finReservaVisual
+                        etiqueta = "Retiro previsto",
+                        valor = solicitud.inicioReservaVisual
                     )
-                }
 
-                // Fechas reales del préstamo
-                when (prestamo.estado) {
-                    EstadoPrestamo.PENDIENTE -> {
-                        Text(
-                            "Pendiente de entrega",
-                            color = TextMuted
-                        )
-                    }
-
-                    EstadoPrestamo.EN_CURSO,
-                    EstadoPrestamo.VENCIDO -> {
-                        TextoDato(
-                            "Inicio real",
-                            if (prestamo.fechaInicioUso != null) {
-                                prestamo.fechaInicoVisual
-                            } else {
-                                "Sin registrar"
-                            }
-                        )
-                    }
-
-                    EstadoPrestamo.FINALIZADO -> {
-                        TextoDato(
-                            "Inicio real",
-                            prestamo.fechaInicoVisual
-                        )
-                        TextoDato(
-                            "Fin real",
-                            prestamo.fechaFinVisual
-                        )
-                    }
-
-                    EstadoPrestamo.CANCELADO -> {
-                        Text(
-                            "Este préstamo fue cancelado.",
-                            color = TextMuted
-                        )
-                    }
+                    TextoDato(
+                        etiqueta = "Devolución prevista",
+                        valor = solicitud.finReservaVisual
+                    )
                 }
             }
 
@@ -358,18 +311,30 @@ fun DetallePrestamoContent(
                     color = TextDark
                 )
 
-                prestamo.detalles.forEach { detalle ->
-                    HorizontalDivider(color = Divider)
+                prestamo.detalles.forEachIndexed { index, detalle ->
+                    if (index > 0) {
+                        HorizontalDivider(color = Divider)
+                    }
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        Icon(
-                            Icons.Default.Devices,
-                            contentDescription = null,
-                            tint = Primary
-                        )
+                        Box(
+                            modifier = Modifier
+                                .size(44.dp)
+                                .background(
+                                    PrimarySoft,
+                                    RoundedCornerShape(12.dp)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Devices,
+                                contentDescription = null,
+                                tint = Primary
+                            )
+                        }
 
                         Column(
                             modifier = Modifier.weight(1f)

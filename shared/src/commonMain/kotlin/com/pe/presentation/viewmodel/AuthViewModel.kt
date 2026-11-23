@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 import com.pe.domain.usecase.Notificaciones.RegistrarFcmTokenUseCase
+import pe.edu.upeu.data.local.SessionManager
 
 sealed class AuthState {
     data object Idle : AuthState()
@@ -20,11 +21,24 @@ sealed class AuthState {
 
 class AuthViewModel(
     private val loginUseCase: LoginUseCase,
-    private val registrarFcmTokenUseCase: RegistrarFcmTokenUseCase
+    private val registrarFcmTokenUseCase: RegistrarFcmTokenUseCase,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<AuthState>(AuthState.Idle)
     val state: StateFlow<AuthState> = _state.asStateFlow()
+
+    init {
+        val tokenGuardado = sessionManager.getToken()
+        val usuarioGuardado = sessionManager.getUser()
+
+        if (!tokenGuardado.isNullOrBlank() && usuarioGuardado != null) {
+            _state.value = AuthState.Success(usuarioGuardado)
+        } else {
+            sessionManager.clear()
+            _state.value = AuthState.Idle
+        }
+    }
 
     fun login(correo: String, password: String) {
         if (correo.isBlank() || password.isBlank()) {
@@ -67,6 +81,7 @@ class AuthViewModel(
     }
 
     fun resetState() {
+        sessionManager.clear()
         _state.value = AuthState.Idle
     }
 }

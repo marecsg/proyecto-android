@@ -21,6 +21,7 @@ import com.pe.domain.model.Equipo
 import com.pe.presentation.components.BotonPrincipal
 import com.pe.presentation.theme.*
 import com.pe.utils.FechaUtils
+import com.pe.utils.HoraVisualTransformation
 import kotlinx.datetime.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -45,6 +46,7 @@ fun CrearSolicitudContent(
     var aceptoTerminos by remember {
         mutableStateOf(false)
     }
+
 
     var mostrarOpciones by remember { mutableStateOf(false) }
     var seleccionandoFecha by remember { mutableStateOf<Boolean?>(null) }
@@ -162,6 +164,33 @@ fun CrearSolicitudContent(
                 motivo.isNotBlank() &&
                 aceptoTerminos
 
+
+    val mensajeValidacion = when {
+        equiposSeleccionados.isEmpty() ->
+            "Agrega al menos un equipo."
+
+        !equiposValidos ->
+            "Selecciona equipos disponibles del mismo laboratorio."
+
+        fechaInicio.isBlank() || fechaFin.isBlank() ->
+            "Selecciona las fechas de inicio y devolución."
+
+        horaInicio24 == null || horaFin24 == null ->
+            "Ingresa horas válidas, por ejemplo 08:00 y 10:00."
+
+        !fechasValidas ->
+            "La devolución debe ser posterior al inicio."
+
+        motivo.isBlank() ->
+            "Escribe el motivo de tu solicitud."
+
+        !aceptoTerminos ->
+            "Acepta los términos y condiciones."
+
+        else -> null
+    }
+
+
     Scaffold(
         containerColor = BackgroundClean,
         topBar = {
@@ -202,6 +231,13 @@ fun CrearSolicitudContent(
                         }
                     }
                 )
+                if (mensajeValidacion != null && !procesando) {
+                    Text(
+                        text = mensajeValidacion,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
 
                 TextButton(
                     onClick = onVolver,
@@ -325,6 +361,7 @@ fun CrearSolicitudContent(
                         },
                         placeholder = { Text("08:00") },
                         singleLine = true,
+                        visualTransformation = HoraVisualTransformation,
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number
                         )
@@ -365,6 +402,7 @@ fun CrearSolicitudContent(
                         },
                         placeholder = { Text("10:00") },
                         singleLine = true,
+                        visualTransformation = HoraVisualTransformation,
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number
                         )
@@ -434,19 +472,8 @@ fun CrearSolicitudContent(
     }
 }
 
-private fun horaValida(hora: String): Boolean {
-    return Regex("""([01][0-9]|2[0-3]):[0-5][0-9]""")
-        .matches(hora)
-}
-
 private fun formatearHora(texto: String): String {
-    val digitos = texto.filter { it.isDigit() }.take(4)
-
-    return if (digitos.length > 2) {
-        "${digitos.take(2)}:${digitos.drop(2)}"
-    } else {
-        digitos
-    }
+   return texto.filter { it.isDigit() }.take(4)
 }
 
 private fun mostrarFecha(fecha: String): String {

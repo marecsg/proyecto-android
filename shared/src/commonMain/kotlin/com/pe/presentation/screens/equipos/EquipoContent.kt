@@ -32,7 +32,8 @@ fun EquipoContent(
     equipos: List<Equipo>,
     ambientes: List<OpcionAmbiente>,
     onClick: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    esEncargado: Boolean
 ) {
     var busqueda by remember {
         mutableStateOf("")
@@ -247,6 +248,7 @@ fun EquipoContent(
 
                     EquipoCard(
                         equipo = equipo,
+                        mostrarCodigo = esEncargado,
                         onClick = onClick
                     )
                 }

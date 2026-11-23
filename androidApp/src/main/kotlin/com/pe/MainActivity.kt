@@ -15,6 +15,7 @@ import com.pe.qr.QrScannerScreen
 
 import com.google.firebase.messaging.FirebaseMessaging
 import android.util.Log
+import androidx.core.view.WindowCompat
 
 class MainActivity : ComponentActivity() {
     private var fcmToken by mutableStateOf<String?>(null)
@@ -42,6 +43,18 @@ class MainActivity : ComponentActivity() {
 
             var lecturaQr by remember {
                 mutableStateOf<LecturaQr?>(null)
+            }
+
+            LaunchedEffect(origenEscaneo) {
+                val fondoClaro = origenEscaneo == null
+
+                val barras = WindowCompat.getInsetsController(
+                    window,
+                    window.decorView
+                )
+
+                barras.isAppearanceLightStatusBars = fondoClaro
+                barras.isAppearanceLightNavigationBars = fondoClaro
             }
 
             Box(modifier = Modifier.fillMaxSize()) {
