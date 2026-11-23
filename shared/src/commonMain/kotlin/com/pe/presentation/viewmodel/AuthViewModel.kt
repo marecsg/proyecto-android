@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pe.domain.model.Usuario
 import com.pe.domain.usecase.Auth.LoginUseCase
+import com.pe.domain.usecase.Notificaciones.DesvincularFcmTokenUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,6 +23,7 @@ sealed class AuthState {
 class AuthViewModel(
     private val loginUseCase: LoginUseCase,
     private val registrarFcmTokenUseCase: RegistrarFcmTokenUseCase,
+    private val desvincularFcmTokenUseCase: DesvincularFcmTokenUseCase,
     private val sessionManager: SessionManager
 ) : ViewModel() {
 
@@ -77,6 +79,27 @@ class AuthViewModel(
                 .onFailure { error ->
                     println("Error registrando FCM: ${error.message}")
                 }
+        }
+    }
+
+    fun cerrarSesion(
+        tokenFcm: String?,
+        onFinalizado: (Boolean) -> Unit
+    ) {
+        viewModelScope.launch {
+
+            // Desvincular mientras el JWT sigue disponible.
+            val desvinculado = if (!tokenFcm.isNullOrBlank()) {
+                desvincularFcmTokenUseCase(tokenFcm).isSuccess
+            } else {
+                false
+            }
+
+            // Cerrar la sesión local después de la petición
+            resetState()
+
+            // Informar si la desvinculación funcionó
+            onFinalizado(desvinculado)
         }
     }
 

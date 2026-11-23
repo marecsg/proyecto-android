@@ -11,6 +11,7 @@ data class HistorialDto(
     val nombreAfectado: String,
     val tipoAccion: String,
     val tipoEntidad: String,
+    val codigoEntidad: String? = null,
     val idEntidad: Int,
     val descripcion: String? = null,
     val fechaAccion: String

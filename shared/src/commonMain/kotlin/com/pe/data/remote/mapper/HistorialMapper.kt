@@ -12,6 +12,7 @@ fun HistorialDto.toDomain(): Historial {
         nombreAfectado = nombreAfectado,
         tipoAccion = tipoAccion,
         tipoEntidad = tipoEntidad,
+        codigoEntidad = codigoEntidad,
         idEntidad = idEntidad,
         descripcion = descripcion,
         fechaAccion = fechaAccion

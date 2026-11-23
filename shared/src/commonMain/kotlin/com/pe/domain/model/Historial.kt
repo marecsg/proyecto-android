@@ -9,6 +9,7 @@ data class Historial(
     val nombreAfectado: String,
     val tipoAccion: String,
     val tipoEntidad: String,
+    val codigoEntidad: String? = null,
     val idEntidad: Int,
     val descripcion: String?,
     val fechaAccion: String

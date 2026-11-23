@@ -22,6 +22,7 @@ fun SolicitudDto.toDomain(): Solicitud {
         fechaRespuesta = fechaRespuesta,
         comentarioRespuesta = comentarioRespuesta,
         estado = EstadoSolicitud.desdeTexto(estadoSolicitud),
+        nombreEncargadoRespuesta = nombreEncargadoRespuesta,
         detalles = detalles.map { it.toDomain() },
         codigoCorrelativo = codigoCorrelativo
     )

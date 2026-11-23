@@ -17,6 +17,7 @@ fun PrestamoDto.toDomain(): Prestamo {
         nombreAmbiente = nombreAmbiente ?: "Sin ambiente",
         idEncargadoAprobacion = idEncargadoAprobacion,
         nombreEncargadoAprobacion = nombreEncargadoAprobacion ?: "Pendiente",
+        nombreEncargadoInicio = nombreEncargadoInicio,
         idEncargadoDevolucion = idEncargadoDevolucion,
         nombreEncargadoDevolucion = nombreEncargadoDevolucion,
         fechaInicioUso = fechaInicioUso,

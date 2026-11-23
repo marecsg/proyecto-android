@@ -311,24 +311,6 @@ fun IncidenciasContent(
             }
         }
 
-        // BOTÓN DEL ESTUDIANTE
-        if (!esEncargado) {
-            Button(
-                onClick = onReportarIncidencia,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        horizontal = 16.dp,
-                        vertical = 8.dp
-                    ),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Primary
-                )
-            ) {
-                Text("Reportar incidencia")
-            }
-        }
-
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -400,6 +382,17 @@ fun IncidenciasContent(
                             )
                         }
                     }
+                }
+            }
+
+            if (!esEncargado) {
+                Button(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(16.dp),
+                    onClick = onReportarIncidencia
+                ) {
+                    Text("+ Reportar incidencia")
                 }
             }
         }

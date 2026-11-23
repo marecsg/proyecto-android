@@ -280,26 +280,28 @@ fun DetallePrestamoContent(
                     color = TextMuted
                 )
 
+
+
                 if (solicitud != null) {
-                    HorizontalDivider(color = Divider)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        FechaProgramadaPrestamo(
+                            titulo = "Retiro previsto",
+                            fecha = solicitud.inicioReservaVisual,
+                            modifier = Modifier.weight(1f)
+                        )
 
-                    Text(
-                        text = "Período programado",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = TextDark,
-                        fontWeight = FontWeight.SemiBold
-                    )
-
-                    TextoDato(
-                        etiqueta = "Retiro previsto",
-                        valor = solicitud.inicioReservaVisual
-                    )
-
-                    TextoDato(
-                        etiqueta = "Devolución prevista",
-                        valor = solicitud.finReservaVisual
-                    )
+                        FechaProgramadaPrestamo(
+                            titulo = "Devolución prevista",
+                            fecha = solicitud.finReservaVisual,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
+
+
             }
 
             // EQUIPOS DEL PRÉSTAMO
@@ -345,11 +347,13 @@ fun DetallePrestamoContent(
                                 style = MaterialTheme.typography.bodyMedium
                             )
 
-                            Text(
-                                detalle.codigoQrEquipo,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = TextMuted
-                            )
+                            if (esEncargado) {
+                                Text(
+                                    detalle.codigoQrEquipo,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = TextMuted
+                                )
+                            }
                         }
 
                         Text(
@@ -409,6 +413,7 @@ fun DetallePrestamoContent(
                 }
             }
 
+
             // SEGUIMIENTO
             SeccionPrestamo {
                 Text(
@@ -424,16 +429,24 @@ fun DetallePrestamoContent(
                         solicitud.fechaSolicitudVisual,
                         true
                     )
-
-                    HitoPrestamo(
-                        "Solicitud aprobada",
-                        solicitud.fechaRespuesta
-                            ?.let { solicitud.fechaRespuestaVisual },
-                        true
-                    )
                 }
 
+                HitoPrestamo(
+                    titulo = "Solicitud aprobada",
+                    fecha = listOfNotNull(
+                        prestamo.nombreEncargadoAprobacion
+                            .takeIf {
+                                it.isNotBlank() && it != "Pendiente"
+                            }
+                            ?.let { "Aprobada por: $it" },
+                        solicitud?.fechaRespuesta
+                            ?.let { solicitud.fechaRespuestaVisual }
+                    ).joinToString("\n").ifBlank { null },
+                    completado = true
+                )
+
                 when (prestamo.estado) {
+
                     EstadoPrestamo.PENDIENTE -> {
                         HitoPrestamo(
                             "Entrega pendiente",
@@ -444,10 +457,16 @@ fun DetallePrestamoContent(
 
                     EstadoPrestamo.EN_CURSO,
                     EstadoPrestamo.VENCIDO -> {
+
                         HitoPrestamo(
-                            "Equipos retirados",
-                            prestamo.fechaInicoVisual,
-                            true
+                            titulo = "Equipos retirados",
+                            fecha = listOfNotNull(
+                                prestamo.nombreEncargadoInicio
+                                    ?.takeIf { it.isNotBlank() }
+                                    ?.let { "Iniciado por: $it" },
+                                prestamo.fechaInicoVisual
+                            ).joinToString("\n"),
+                            completado = true
                         )
 
                         HitoPrestamo(
@@ -458,16 +477,27 @@ fun DetallePrestamoContent(
                     }
 
                     EstadoPrestamo.FINALIZADO -> {
+
                         HitoPrestamo(
-                            "Equipos retirados",
-                            prestamo.fechaInicoVisual,
-                            true
+                            titulo = "Equipos retirados",
+                            fecha = listOfNotNull(
+                                prestamo.nombreEncargadoInicio
+                                    ?.takeIf { it.isNotBlank() }
+                                    ?.let { "Iniciado por: $it" },
+                                prestamo.fechaInicoVisual
+                            ).joinToString("\n"),
+                            completado = true
                         )
 
                         HitoPrestamo(
-                            "Devolución registrada",
-                            prestamo.fechaFinVisual,
-                            true
+                            titulo = "Devolución registrada",
+                            fecha = listOfNotNull(
+                                prestamo.nombreEncargadoDevolucion
+                                    ?.takeIf { it.isNotBlank() }
+                                    ?.let { "Registrada por: $it" },
+                                prestamo.fechaFinVisual
+                            ).joinToString("\n"),
+                            completado = true
                         )
                     }
 
@@ -480,6 +510,7 @@ fun DetallePrestamoContent(
                     }
                 }
             }
+
 
             if (error != null) {
                 Text(
@@ -575,6 +606,49 @@ private fun HitoPrestamo(
                     color = TextMuted
                 )
             }
+        }
+    }
+
+
+}
+
+@Composable
+private fun FechaProgramadaPrestamo(
+    titulo: String,
+    fecha: String,
+    modifier: Modifier = Modifier
+) {
+    val partes = fecha.split(" ", limit = 2)
+
+    Column(
+        modifier = modifier
+            .background(
+                BackgroundClean,
+                RoundedCornerShape(12.dp)
+            )
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Text(
+            text = titulo,
+            color = TextMuted,
+            style = MaterialTheme.typography.labelSmall
+        )
+
+        Text(
+            text = partes.firstOrNull()
+                .orEmpty()
+                .ifBlank { "Desconocido" },
+            color = TextDark,
+            style = MaterialTheme.typography.bodyMedium
+        )
+
+        if (partes.size > 1) {
+            Text(
+                text = partes[1],
+                color = TextBody,
+                style = MaterialTheme.typography.labelSmall
+            )
         }
     }
 }

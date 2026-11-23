@@ -333,117 +333,45 @@ fun CrearSolicitudContent(
 
             // FECHAS Y HORAS
             Text(
-                "Fecha y hora",
+                text = "Fecha y hora",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Fecha de préstamo")
-                    OutlinedButton(
-                        onClick = { seleccionandoFecha = true },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(mostrarFecha(fechaInicio))
-                    }
+            CampoFechaHoraSolicitud(
+                titulo = "Retiro previsto",
+                fecha = fechaInicio,
+                hora = horaInicio,
+                ejemploHora = "08:00",
+                periodo = periodoInicio,
+                onElegirFecha = {
+                    seleccionandoFecha = true
+                },
+                onCambiarHora = {
+                    horaInicio = formatearHora(it)
+                },
+                onCambiarPeriodo = {
+                    periodoInicio = it
                 }
+            )
 
-                Column(modifier = Modifier.weight(1.8f)) {
-                    Text("Hora de inicio")
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        OutlinedTextField(
-                            value = horaInicio,
-                            onValueChange = {
-                                horaInicio = formatearHora(it)
-                            },
-                            modifier = Modifier.weight(1f),
-                            placeholder = { Text("08:00") },
-                            singleLine = true,
-                            visualTransformation = HoraVisualTransformation,
-                            textStyle = MaterialTheme.typography.bodySmall,
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Number
-                            )
-                        )
-
-                        listOf("AM", "PM").forEach { periodo ->
-                            FilterChip(
-                                selected = periodoInicio == periodo,
-                                onClick = { periodoInicio = periodo },
-                                label = {
-                                    Text(
-                                        periodo,
-                                        style = MaterialTheme.typography.labelSmall
-                                    )
-                                }
-                            )
-                        }
-                    }
+            CampoFechaHoraSolicitud(
+                titulo = "Devolución prevista",
+                fecha = fechaFin,
+                hora = horaFin,
+                ejemploHora = "10:00",
+                periodo = periodoFin,
+                onElegirFecha = {
+                    seleccionandoFecha = false
+                },
+                onCambiarHora = {
+                    horaFin = formatearHora(it)
+                },
+                onCambiarPeriodo = {
+                    periodoFin = it
                 }
+            )
 
-            }
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Fecha de devolución")
-                    OutlinedButton(
-                        onClick = { seleccionandoFecha = false },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(mostrarFecha(fechaFin))
-                    }
-                }
-
-
-                Column(modifier = Modifier.weight(1.8f)) {
-                    Text("Hora de devolución")
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        OutlinedTextField(
-                            value = horaFin,
-                            onValueChange = {
-                                horaFin = formatearHora(it)
-                            },
-                            modifier = Modifier.weight(1f),
-                            placeholder = { Text("10:00") },
-                            singleLine = true,
-                            visualTransformation = HoraVisualTransformation,
-                            textStyle = MaterialTheme.typography.bodySmall,
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Number
-                            )
-                        )
-
-                        listOf("AM", "PM").forEach { periodo ->
-                            FilterChip(
-                                selected = periodoFin == periodo,
-                                onClick = { periodoFin = periodo },
-                                label = {
-                                    Text(
-                                        periodo,
-                                        style = MaterialTheme.typography.labelSmall
-                                    )
-                                }
-                            )
-                        }
-                    }
-                }
-
-            }
 
             if (inicio != null && fin != null && !fechasValidas) {
                 Text(
@@ -510,3 +438,91 @@ private fun mostrarFecha(fecha: String): String {
         fecha
     }
 }
+
+
+@Composable
+private fun CampoFechaHoraSolicitud(
+    titulo: String,
+    fecha: String,
+    hora: String,
+    ejemploHora: String,
+    periodo: String,
+    onElegirFecha: () -> Unit,
+    onCambiarHora: (String) -> Unit,
+    onCambiarPeriodo: (String) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = SurfaceWhite
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = titulo,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = TextDark
+            )
+
+            // FECHA
+            OutlinedButton(
+                onClick = onElegirFecha,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(
+                    text = mostrarFecha(fecha),
+                    maxLines = 1
+                )
+            }
+
+            // HORA Y AM/PM
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement =
+                    Arrangement.spacedBy(6.dp)
+            ) {
+                OutlinedTextField(
+                    value = hora,
+                    onValueChange = onCambiarHora,
+                    modifier = Modifier.weight(1f),
+                    placeholder = {
+                        Text(ejemploHora)
+                    },
+                    singleLine = true,
+                    visualTransformation =
+                        HoraVisualTransformation,
+                    textStyle =
+                        MaterialTheme.typography.bodyMedium,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                )
+
+                listOf("AM", "PM").forEach { opcion ->
+                    FilterChip(
+                        selected = periodo == opcion,
+                        onClick = {
+                            onCambiarPeriodo(opcion)
+                        },
+                        label = {
+                            Text(
+                                opcion,
+                                style =
+                                    MaterialTheme.typography.labelSmall
+                            )
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+

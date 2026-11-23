@@ -358,38 +358,18 @@ fun DetalleSolicitudContent(
                                     fontWeight = FontWeight.Medium
                                 )
 
-                                Text(
-                                    text = equipo.codigoQrEquipo,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = TextMuted
-                                )
+                                if (esEncargado) {
+                                    Text(
+                                        text = equipo.codigoQrEquipo,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = TextMuted
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
-            items(solicitud.detalles, key = { it.idEquipo }) { equipo ->
-                TarjetaDetalleSolicitud {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier.size(42.dp)
-                                .background(PrimarySoft, RoundedCornerShape(12.dp)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(Icons.Default.Devices, contentDescription = null, tint = Primary)
-                        }
-                        Column {
-                            Text(equipo.nombreEquipo, color = TextDark)
-                            Text(equipo.codigoQrEquipo,
-                                color = TextMuted, style = MaterialTheme.typography.labelSmall)
-                        }
-                    }
-                }
-            }
-
             item {
                 TarjetaDetalleSolicitud {
                     Text("Motivo", color = TextMuted,
@@ -412,16 +392,38 @@ fun DetalleSolicitudContent(
                             "En revisión", "Esperando la respuesta del encargado", false
                         )
                         EstadoSolicitud.APROBADA -> EventoSolicitud(
-                            "Solicitud aprobada",
-                            if (solicitud.fechaRespuesta != null)
-                                solicitud.fechaRespuestaVisual else "Aprobada por el encargado",
-                            true
+                            titulo = "Solicitud aprobada",
+                            descripcion = buildString {
+                                append("Aprobada por: ")
+                                append(
+                                    solicitud.nombreEncargadoRespuesta
+                                        ?.takeIf { it.isNotBlank() }
+                                        ?: "No disponible"
+                                )
+
+                                if (solicitud.fechaRespuesta != null) {
+                                    append("\n${solicitud.fechaRespuestaVisual}")
+                                }
+                            },
+                            completado = true
                         )
+
                         EstadoSolicitud.RECHAZADA -> EventoSolicitud(
-                            "Solicitud rechazada",
-                            if (solicitud.fechaRespuesta != null)
-                                solicitud.fechaRespuestaVisual else "Rechazada por el encargado",
-                            true, esError = true
+                            titulo = "Solicitud rechazada",
+                            descripcion = buildString {
+                                append("Rechazada por: ")
+                                append(
+                                    solicitud.nombreEncargadoRespuesta
+                                        ?.takeIf { it.isNotBlank() }
+                                        ?: "No disponible"
+                                )
+
+                                if (solicitud.fechaRespuesta != null) {
+                                    append("\n${solicitud.fechaRespuestaVisual}")
+                                }
+                            },
+                            completado = true,
+                            esError = true
                         )
                         EstadoSolicitud.CANCELADA -> EventoSolicitud(
                             "Solicitud cancelada",

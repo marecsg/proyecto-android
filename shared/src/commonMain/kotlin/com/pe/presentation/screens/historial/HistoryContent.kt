@@ -136,52 +136,6 @@ fun HistoryContent(
             .background(BackgroundClean)
     ) {
 
-        // ENCABEZADO
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    start = 16.dp,
-                    end = 8.dp,
-                    top = 12.dp,
-                    bottom = 12.dp
-                ),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    text = "Actividad reciente",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = TextDark
-                )
-
-                Text(
-                    text = if (esEncargado) {
-                        "Acciones registradas por ti"
-                    } else {
-                        "Movimientos relacionados contigo"
-                    },
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextMuted
-                )
-            }
-
-            IconButton(
-                onClick = onRecargar,
-                enabled = estado !is HistorialUiState.Loading
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Refresh,
-                    contentDescription = "Actualizar historial",
-                    tint = Primary
-                )
-            }
-        }
-
         when (estado) {
 
             HistorialUiState.Idle -> {
@@ -306,8 +260,10 @@ fun HistoryContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(
-                            horizontal = 16.dp,
-                            vertical = 8.dp
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 16.dp,
+                            bottom = 8.dp
                         ),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -349,16 +305,37 @@ fun HistoryContent(
                     }
                 }
 
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 4.dp,
+                            bottom = 8.dp
+                        ),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
 
-                Text(
-                    text = "${registrosFiltrados.size} actividades",
-                    modifier = Modifier.padding(
-                        horizontal = 16.dp,
-                        vertical = 12.dp
-                    ),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = TextMuted
-                )
+                    TextButton(
+                        onClick = onRecargar
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+
+                        Spacer(Modifier.width(6.dp))
+
+                        Text(
+                            "Actualizar",
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    }
+                }
+
 
                 if (registrosFiltrados.isEmpty()) {
 

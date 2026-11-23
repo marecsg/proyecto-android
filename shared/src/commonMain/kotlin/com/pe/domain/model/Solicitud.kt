@@ -37,6 +37,7 @@ data class Solicitud(
     val codigoEstudiante: String = "",
     val fechaRespuesta: String? = null,
     val comentarioRespuesta: String? = null,
+    val nombreEncargadoRespuesta: String? = null,
     val detalles: List<DetalleSolicitud> = emptyList(),
     val codigoCorrelativo: String? = null
 ) {

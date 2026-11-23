@@ -58,6 +58,7 @@ fun App(
         val historialViewModel = koinViewModel<HistorialViewModel>()
 
         val notificationSettingsViewModel = koinViewModel<NotificationSettingsViewModel>()
+        val notificationSettingsState by notificationSettingsViewModel.uiState.collectAsState()
         val auth by authViewModel.state.collectAsState()
         val equipoState by equipoViewModel.uiState.collectAsState()
         val solicitudState by solicitudViewModel.uiState.collectAsState()
@@ -65,14 +66,23 @@ fun App(
         val incidenciaState by incidenciaViewModel.uiState.collectAsState()
         val historialState by historialViewModel.uiState.collectAsState()
         val usuario = (auth as? AuthState.Success)?.usuario
-        LaunchedEffect(usuario?.idUsuario, fcmToken) {
-            if (usuario != null && !fcmToken.isNullOrBlank()) {
+        LaunchedEffect(
+            usuario?.idUsuario,
+            fcmToken,
+            notificationSettingsState.isEnabled
+        ) {
+            if (
+                usuario != null &&
+                !fcmToken.isNullOrBlank() &&
+                notificationSettingsState.isEnabled
+            ) {
                 authViewModel.registrarTokenFcm(fcmToken)
             }
         }
 
         var pantalla by remember { mutableStateOf<Screen>(Screen.Splash) }
         var pestana by remember { mutableIntStateOf(0) }
+        var pestanaPrestamos by remember { mutableIntStateOf(0) }
         var idEquipoDetalle by remember { mutableStateOf<Int?>(null) }
         var idSolicitudDetalle by remember { mutableStateOf<Int?>(null) }
         var idPrestamoDetalle by remember { mutableStateOf<Int?>(null) }
@@ -242,6 +252,7 @@ fun App(
                     Screen.NotificationSetting -> {
                         NotificationSettingsContent(
                             viewModel = notificationSettingsViewModel,
+                            tokenFcm = fcmToken,
                             onBack = {
                                 pantalla = Screen.Home
                             }
@@ -259,16 +270,32 @@ fun App(
                                 selectedTab = pestana,
                                 onTabSelected = { pestana = it },
                                 onLogout = {
-                                    authViewModel.resetState()
-                                    equipoViewModel.clear()
-                                    solicitudViewModel.clear()
-                                    prestamoViewModel.clear()
-                                    historialViewModel.limpiar()
-                                    incidenciaViewModel.clear()
-                                    idIncidenciaDetalle = null
-                                    idsSeleccionados = emptySet()
-                                    pantalla = Screen.Login
-                                },
+                                    authViewModel.cerrarSesion(
+                                    tokenFcm = fcmToken,
+                                    onFinalizado = { desvinculado ->
+
+                                        equipoViewModel.clear()
+                                        solicitudViewModel.clear()
+                                        prestamoViewModel.clear()
+                                        historialViewModel.limpiar()
+                                        incidenciaViewModel.clear()
+
+                                        idIncidenciaDetalle = null
+                                        idsSeleccionados = emptySet()
+
+                                        pestana = 0
+                                        pestanaPrestamos = 0
+
+                                        pantalla = Screen.Login
+
+                                        if (!desvinculado && !fcmToken.isNullOrBlank()) {
+                                            println(
+                                                "Advertencia: no se pudo desvincular el token FCM"
+                                            )
+                                        }
+                                    }
+                                )
+                        },
                                         onEditProfile = { pantalla = Screen.ProfileUpdate },
 
                                 onSettingsClick = {pantalla= Screen.NotificationSetting},
@@ -298,12 +325,17 @@ fun App(
                                                 solicitudes = solicitudState.solicitudes,
                                                 prestamos = prestamoState.prestamos,
                                                 esEncargado = usuario.esEncargado,
+                                                pestanaSeleccionada = pestanaPrestamos,
+                                                onCambiarPestana = {
+                                                    pestanaPrestamos = it
+                                                },
                                                 onVerDetalleSolicitud = { id ->
                                                     idSolicitudDetalle = id
                                                     solicitudViewModel.cargarDetalle(id)
                                                     pantalla = Screen.DetalleSolicitud
                                                 },
                                                 onVerDetallePrestamo = { id ->
+                                                    pestanaPrestamos = 1
                                                     idPrestamoDetalle = id
                                                     prestamoViewModel.cargarDetalle(id)
                                                     pantalla = Screen.DetallePrestamo
@@ -526,6 +558,7 @@ fun App(
                                     val p = prestamoState.prestamos.firstOrNull { it.idSolicitud == idSolicitud }
                                     if (p == null) aviso = "Actualiza la lista de préstamos y vuelve a intentar."
                                     else {
+                                        pestanaPrestamos = 1
                                         idPrestamoDetalle = p.idPrestamo
                                         prestamoViewModel.cargarDetalle(p.idPrestamo)
                                         pantalla = Screen.DetallePrestamo
@@ -548,12 +581,22 @@ fun App(
                                 CircularProgressIndicator()
                             }
                         } else {
+
+                            LaunchedEffect(prestamo.idSolicitud) {
+                                solicitudViewModel.cargarDetalle(prestamo.idSolicitud)
+                            }
+
                             DetallePrestamoContent(
                                 prestamo = prestamo,
                                 esEncargado = usuario?.esEncargado == true,
-                                solicitud = solicitudState.solicitudes.firstOrNull {
-                                    it.idSolicitud == prestamo.idSolicitud
-                                },
+                                solicitud = solicitudState.solicitudSeleccionada
+                                    ?.takeIf {
+                                        it.idSolicitud == prestamo.idSolicitud
+                                    }
+                                    ?: solicitudState.solicitudes.firstOrNull {
+                                        it.idSolicitud == prestamo.idSolicitud
+                                    },
+
                                 onVolver = { pantalla = Screen.Home },
                                 onCancelarPrestamo = {
                                     prestamoViewModel.cambiarEstado(it, EstadoPrestamo.CANCELADO)

@@ -46,12 +46,11 @@ fun PrestamosContent(
     cargandoSolicitudes: Boolean = false,
     cargandoPrestamos: Boolean = false,
     errorSolicitudes: String? = null,
-    errorPrestamos: String? = null
+    errorPrestamos: String? = null,
+    pestanaSeleccionada: Int,
+    onCambiarPestana: (Int) -> Unit = {}
 ) {
 
-    var pestanaSeleccionada by rememberSaveable {
-        mutableIntStateOf(0)
-    }
 
     var busqueda by rememberSaveable {
         mutableStateOf("")
@@ -224,8 +223,10 @@ fun PrestamosContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(
-                    horizontal = 16.dp,
-                    vertical = 12.dp
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 16.dp,
+                    bottom = 12.dp
                 ),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -288,7 +289,7 @@ fun PrestamosContent(
                 seleccionada = pestanaSeleccionada == 0,
                 modifier = Modifier.weight(1f),
                 onClick = {
-                    pestanaSeleccionada = 0
+                    onCambiarPestana(0)
                     busqueda = ""
                     estadoSeleccionado = null
                     ambienteSeleccionado = null
@@ -301,7 +302,7 @@ fun PrestamosContent(
                 seleccionada = pestanaSeleccionada == 1,
                 modifier = Modifier.weight(1f),
                 onClick = {
-                    pestanaSeleccionada = 1
+                    onCambiarPestana(1)
                     busqueda = ""
                     estadoSeleccionado = null
                     ambienteSeleccionado = null

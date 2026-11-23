@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,10 +32,15 @@ import androidx.compose.runtime.getValue
 @Composable
 fun NotificationSettingsContent(
     viewModel: NotificationSettingsViewModel,
+    tokenFcm: String?,
     onBack: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
-    val permissionLauncher = rememberNotificationPermissionLauncher(viewModel::onPermissionResult)
+    val permissionLauncher = rememberNotificationPermissionLauncher{granted ->
+        viewModel.onPermissionResult(
+            granted = granted,
+            tokenFcm = tokenFcm
+        )}
 
     Scaffold (
         topBar = {
@@ -70,28 +74,27 @@ fun NotificationSettingsContent(
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Notificaciones", style = MaterialTheme.typography.titleMedium)
                     Text(
-                        "Activa las notificaciones locales de esta app.",
+                        "Recibe avisos sobre solicitudes, préstamos e incidencias.",
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
                 Switch(
                     checked = state.isEnabled,
+                    enabled = !state.isUpdating,
                     onCheckedChange = { enabled ->
-                        if (enabled) permissionLauncher.request()
-                        else viewModel.setNotificationEnabled(false)
+                        if (enabled) {
+                            permissionLauncher.request()
+                        } else {
+                        viewModel.setNotificationEnabled(
+                            enabled = false,
+                            tokenFcm = tokenFcm
+                        )
+                        }
                     }
                 )
             }
 
             Spacer(Modifier.height(24.dp))
-
-            Button(
-                onClick = viewModel::sendTestNotification,
-                enabled = state.isEnabled && !state.isSendingTest,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(if (state.isSendingTest) "Enviando…" else "Enviar notificación local de prueba")
-            }
 
             state.feedbackMessage?.let { message ->
                 Spacer(Modifier.height(16.dp))
@@ -102,13 +105,6 @@ fun NotificationSettingsContent(
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
-
-            Spacer(Modifier.height(24.dp))
-            Text(
-                "Esta prueba se genera en el dispositivo; todavía no requiere Firebase ni el backend.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }

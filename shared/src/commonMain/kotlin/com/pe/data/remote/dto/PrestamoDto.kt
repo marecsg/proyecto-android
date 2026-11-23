@@ -13,6 +13,7 @@ data class PrestamoDto(
     val nombreAmbiente: String? = null,
     val idEncargadoAprobacion: Int? = null,
     val nombreEncargadoAprobacion: String? = null,
+    val nombreEncargadoInicio: String? = null,
     val idEncargadoDevolucion: Int? = null,
     val nombreEncargadoDevolucion: String? = null,
     val fechaInicioUso: String? = null,

@@ -19,6 +19,7 @@ data class SolicitudDto(
     val estadoSolicitud: String,
     val fechaRespuesta: String? = null,
     val comentarioRespuesta: String? = null,
+    val nombreEncargadoRespuesta: String? = null,
     val detalles: List<SolicitudDetalleDto> = emptyList()
 )
 

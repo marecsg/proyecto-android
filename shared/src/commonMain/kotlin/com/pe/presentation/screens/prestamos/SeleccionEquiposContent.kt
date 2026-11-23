@@ -7,8 +7,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,7 +26,8 @@ import com.pe.presentation.components.Buscador
 import com.pe.presentation.components.EquipoCard
 import com.pe.presentation.theme.*
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class,
+    ExperimentalLayoutApi::class)
 @Composable
 fun SeleccionEquiposContent(
     equipos: List<Equipo>,
@@ -35,6 +39,32 @@ fun SeleccionEquiposContent(
     var busqueda by remember { mutableStateOf("") }
     var filtro by remember { mutableStateOf("Todos") }
     var aviso by remember { mutableStateOf<String?>(null) }
+
+
+    var mostrarFiltros by remember {
+        mutableStateOf(false)
+    }
+
+    var borradorFiltro by remember {
+        mutableStateOf("Todos")
+    }
+
+    var ambienteSeleccionado by remember {
+        mutableStateOf<Int?>(null)
+    }
+
+    var borradorAmbiente by remember {
+        mutableStateOf<Int?>(null)
+    }
+
+    val ambientesDisponibles = equipos
+        .distinctBy { it.idAmbiente }
+        .sortedBy { it.nombreAmbiente }
+
+    val filtrosActivos =
+        (if (filtro != "Todos") 1 else 0) +
+                (if (ambienteSeleccionado != null) 1 else 0)
+
 
     val seleccionados = equipos.filter {
         it.idEquipo in idsSeleccionados
@@ -57,8 +87,131 @@ fun SeleccionEquiposContent(
             else -> true
         }
 
-        coincideBusqueda && coincideFiltro
+        val coincideAmbiente =
+            ambienteSeleccionado == null ||
+                    equipo.idAmbiente == ambienteSeleccionado
+
+        coincideBusqueda && coincideFiltro && coincideAmbiente
     }
+
+
+    if (mostrarFiltros) {
+        ModalBottomSheet(
+            onDismissRequest = {
+                mostrarFiltros = false
+            },
+            containerColor = SurfaceWhite
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp)
+                    .padding(bottom = 24.dp),
+                verticalArrangement =
+                    Arrangement.spacedBy(10.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement =
+                        Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "Filtros",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = TextDark
+                    )
+
+                    TextButton(
+                        onClick = {
+                            borradorFiltro = "Todos"
+                            borradorAmbiente = null
+                        }
+                    ) {
+                        Text("Limpiar")
+                    }
+                }
+
+                Text(
+                    "Disponibilidad",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = TextDark
+                )
+
+                FlowRow(
+                    horizontalArrangement =
+                        Arrangement.spacedBy(8.dp)
+                ) {
+                    listOf(
+                        "Todos",
+                        "Disponibles",
+                        "Prestados",
+                        "Mantenimiento"
+                    ).forEach { opcion ->
+                        FilterChip(
+                            selected = borradorFiltro == opcion,
+                            onClick = {
+                                borradorFiltro = opcion
+                            },
+                            label = {
+                                Text(opcion)
+                            }
+                        )
+                    }
+                }
+
+                Text(
+                    "Ambiente",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = TextDark
+                )
+
+                FlowRow(
+                    horizontalArrangement =
+                        Arrangement.spacedBy(8.dp)
+                ) {
+                    FilterChip(
+                        selected = borradorAmbiente == null,
+                        onClick = {
+                            borradorAmbiente = null
+                        },
+                        label = {
+                            Text("Todos")
+                        }
+                    )
+
+                    ambientesDisponibles.forEach { ambiente ->
+                        FilterChip(
+                            selected =
+                                borradorAmbiente == ambiente.idAmbiente,
+                            onClick = {
+                                borradorAmbiente = ambiente.idAmbiente
+                            },
+                            label = {
+                                Text(ambiente.nombreAmbiente)
+                            }
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                Button(
+                    onClick = {
+                        filtro = borradorFiltro
+                        ambienteSeleccionado = borradorAmbiente
+                        mostrarFiltros = false
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Aplicar filtros")
+                }
+            }
+        }
+    }
+
 
     Scaffold(
         containerColor = BackgroundClean,
@@ -129,31 +282,56 @@ fun SeleccionEquiposContent(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
 
-            Buscador(
-                texto = busqueda,
-                onValueChange = { busqueda = it },
-                placeholder = "Buscar equipo o código"
-            )
 
+            // BUSCADOR + BOTÓN DE FILTROS
             Row(
-                modifier = Modifier.horizontalScroll(
-                    rememberScrollState()
-                ),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement =
+                    Arrangement.spacedBy(8.dp)
             ) {
-                listOf(
-                    "Todos",
-                    "Disponibles",
-                    "Prestados",
-                    "Mantenimiento"
-                ).forEach { opcion ->
-                    FilterChip(
-                        selected = filtro == opcion,
-                        onClick = { filtro = opcion },
-                        label = { Text(opcion) }
-                    )
+                Buscador(
+                    texto = busqueda,
+                    onValueChange = {
+                        busqueda = it
+                    },
+                    modifier = Modifier.weight(1f),
+                    placeholder = "Buscar equipo o código"
+                )
+
+                BadgedBox(
+                    badge = {
+                        if (filtrosActivos > 0) {
+                            Badge {
+                                Text(filtrosActivos.toString())
+                            }
+                        }
+                    }
+                ) {
+                    OutlinedIconButton(
+                        onClick = {
+                            borradorFiltro = filtro
+                            borradorAmbiente = ambienteSeleccionado
+                            mostrarFiltros = true
+                        },
+                        modifier = Modifier.size(52.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Tune,
+                            contentDescription = "Abrir filtros",
+                            tint = if (filtrosActivos > 0) {
+                                Primary
+                            } else {
+                                TextDark
+                            }
+                        )
+                    }
                 }
             }
+
 
             if (aviso != null) {
                 Text(

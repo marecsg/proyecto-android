@@ -18,7 +18,9 @@ data class TicketIncidenciaDto(
     val estadoTicket: String,
     val fechaReporte: String? = null,
     val respuestaEncargado: String? = null,
-    val fechaResolucion: String? = null
+    val fechaResolucion: String? = null,
+    val nombreEncargadoAtencion: String? = null,
+    val nombreEncargadoResolucion: String? = null
 )
 
 // Datos enviados al registrar una incidencia

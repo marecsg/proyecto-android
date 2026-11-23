@@ -51,4 +51,37 @@ class FcmTokenRepositoryImpl(
             Result.failure(e)
         }
     }
+
+    override suspend fun desvincular(token: String): Result<Unit> {
+        return try {
+            val jwt = sessionManager.getToken()
+                ?: return Result.failure(
+                    IllegalStateException("No hay sesión activa")
+                )
+
+            val response = client.post(
+                "${ApiClient.getBaseUrl()}/api/usuarios/fcm-token/desvincular"
+            ) {
+                header(HttpHeaders.Authorization, "Bearer $jwt")
+                contentType(ContentType.Application.Json)
+                setBody(FcmTokenRequest(token))
+            }
+
+            if (response.status.isSuccess()) {
+                Result.success(Unit)
+            } else {
+                Result.failure(
+                    IllegalStateException(
+                        "Error desvinculando FCM: ${response.status.value}"
+                    )
+                )
+            }
+
+        } catch (e: CancellationException) {
+            throw e
+
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

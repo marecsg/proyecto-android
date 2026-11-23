@@ -13,6 +13,7 @@ import com.pe.domain.usecase.Equipos.ObtenerEquiposUseCase
 import com.pe.domain.usecase.Prestamo.*
 import com.pe.domain.usecase.Solicitud.*
 import com.pe.domain.usecase.Historial.*
+import com.pe.domain.usecase.Notificaciones.DesvincularFcmTokenUseCase
 import com.pe.domain.usecase.Notificaciones.GetNotificationSettingsUseCase
 import com.pe.domain.usecase.Notificaciones.SendTestNotificationUseCase
 import com.pe.domain.usecase.Notificaciones.SetNotificationEnabledUseCase
@@ -84,7 +85,7 @@ val appModule = module {
 
     // VIEWMODELS
     viewModel {
-        AuthViewModel(get(), get(), get())
+        AuthViewModel(get(), get(), get(), get())
     }
 
     viewModel {
@@ -128,7 +129,7 @@ val appModule = module {
     factory { SendTestNotificationUseCase(get()) }
 
     viewModel {
-        NotificationSettingsViewModel(get(), get(), get())
+        NotificationSettingsViewModel(get(), get(), get(), get())
     }
 
     single<FcmTokenRepository> {
@@ -137,4 +138,5 @@ val appModule = module {
 
     factory { RegistrarFcmTokenUseCase(get()) }
 
+    factory { DesvincularFcmTokenUseCase(get()) }
 }

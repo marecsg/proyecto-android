@@ -117,7 +117,7 @@ fun HistoryCard(
                     color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Text(
-                        text = categoria,
+                        text = historial.codigoEntidad?.takeIf { it.isNotBlank() } ?: categoria,
                         modifier = Modifier.padding(
                             horizontal = 10.dp,
                             vertical = 4.dp

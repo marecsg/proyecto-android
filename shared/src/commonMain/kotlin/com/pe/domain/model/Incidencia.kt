@@ -53,7 +53,9 @@ data class Incidencia(
     val fechaReporte: String?,
     val respuestaEncargado: String?,
     val fechaResolucion: String?,
-    val codigoCorrelativo: String? = null
+    val codigoCorrelativo: String? = null,
+    val nombreEncargadoAtencion: String? = null,
+    val nombreEncargadoResolucion: String? = null
 ){
     val fechaReporteVisual: String
         get() = formatearFechaHora(fechaReporte)

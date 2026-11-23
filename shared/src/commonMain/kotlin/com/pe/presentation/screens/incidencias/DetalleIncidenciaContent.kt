@@ -261,6 +261,20 @@ fun DetalleIncidenciaContent(
                         "Fecha del reporte",
                         incidencia.fechaReporteVisual
                     )
+
+                    if (estado == EstadoTicket.EN_PROCESO ||
+                        estado == EstadoTicket.RESUELTO
+                    ) {
+                        HorizontalDivider(color = Divider)
+
+                        DatoIncidencia(
+                            "Atendida por",
+                            incidencia.nombreEncargadoAtencion
+                                ?.takeIf { it.isNotBlank() }
+                                ?: "No disponible"
+                        )
+                    }
+
                 }
             }
 
@@ -380,6 +394,12 @@ fun DetalleIncidenciaContent(
                         DatoIncidencia(
                             "Fecha de resolución",
                             incidencia.fechaResolucionVisual
+                        )
+                        DatoIncidencia(
+                            "Resuelta por",
+                            incidencia.nombreEncargadoResolucion
+                                ?.takeIf { it.isNotBlank() }
+                                ?: "No disponible"
                         )
                     }
                 }
