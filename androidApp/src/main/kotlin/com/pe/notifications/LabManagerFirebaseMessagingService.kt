@@ -55,13 +55,13 @@ class LabManagerFirebaseMessagingService : FirebaseMessagingService() {
 
         if (!manager.areNotificationsEnabled()) return
 
-        val channelId = "labmanager_fcm"
+        val channelId = "labmanager_fcm_alertas_v2"
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val canal = NotificationChannel(
                 channelId,
                 "Avisos de LabManager",
-                NotificationManager.IMPORTANCE_DEFAULT
+                NotificationManager.IMPORTANCE_HIGH
             )
 
             getSystemService(NotificationManager::class.java)
@@ -82,7 +82,7 @@ class LabManagerFirebaseMessagingService : FirebaseMessagingService() {
             .setSmallIcon(R.drawable.ic_dialog_info)
             .setContentTitle(titulo)
             .setContentText(contenido)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
             .build()

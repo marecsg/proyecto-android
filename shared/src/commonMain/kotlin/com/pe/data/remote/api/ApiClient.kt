@@ -1,6 +1,8 @@
 package com.pe.data.remote.api
 
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpResponseValidator
+import io.ktor.client.plugins.ResponseException
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
@@ -20,7 +22,27 @@ object ApiClient {
                 json(Json { ignoreUnknownKeys = true; isLenient = true })
             }
             expectSuccess = true
+
+            HttpResponseValidator {
+                handleResponseExceptionWithRequest { exception, request ->
+
+                    val error = exception as? ResponseException
+                        ?: return@handleResponseExceptionWithRequest
+
+                    val esLogin = request.url.encodedPath
+                        .endsWith("/api/auth/login")
+
+                    throw IllegalStateException(
+                        mensajeErrorHttp(
+                            codigo = error.response.status.value,
+                            esLogin = esLogin
+                        ),
+                        error
+                    )
+                }
+            }
         }
+
     }
 
     fun getBaseUrl(): String = BASE_URL

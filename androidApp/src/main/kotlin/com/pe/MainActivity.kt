@@ -1,6 +1,9 @@
 
 package com.pe
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -20,9 +23,27 @@ import androidx.core.view.WindowCompat
 class MainActivity : ComponentActivity() {
     private var fcmToken by mutableStateOf<String?>(null)
 
+    private fun crearCanalFCM() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val canal = NotificationChannel(
+                "labmanager_fcm_alertas_v2",
+                "Alertas de LabManager",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Avisos importantes sobre solicitudes, préstamos e incidencias"
+                enableVibration(true)
+            }
+
+            getSystemService(NotificationManager::class.java)
+                .createNotificationChannel(canal)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+
+        crearCanalFCM()
 
         val notificationPlatform =
             AndroidLocalNotificationPlatform(applicationContext)

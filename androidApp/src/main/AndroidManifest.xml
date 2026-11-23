@@ -3,6 +3,8 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
+
+
     <!--permisos para laS notificaciones-->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-feature
@@ -17,6 +19,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
+
+        <!-- Canal predeterminado para notificaciones FCM -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="labmanager_fcm_alertas_v2" />
+
         <activity
             android:exported="true"
             android:name=".MainActivity">
