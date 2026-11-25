@@ -30,7 +30,7 @@ fun mensajeErrorHttp(
             "El servidor presentó un problema. Inténtalo más tarde."
 
         else ->
-            "No se pudo completar la operación. Inténtalo nuevamente."
+            "Error HTTP: $codigo"
     }
 }
 

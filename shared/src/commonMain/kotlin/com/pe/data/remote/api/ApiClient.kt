@@ -14,7 +14,10 @@ object ApiClient {
     //const val BASE_URL = "http://10.0.2.2:8080"
 
     //prueba con celular (se usa la ip de la pc)
-    const val BASE_URL = "http://192.168.100.197:8080"
+    //const val BASE_URL = "http://192.168.100.197:8080"
+
+    //para desplegar
+    const val BASE_URL = "https://proyecto-backend-production-dd8442c4.up.railway.app"
 
     val httpClient: HttpClient by lazy {
         HttpClient {
