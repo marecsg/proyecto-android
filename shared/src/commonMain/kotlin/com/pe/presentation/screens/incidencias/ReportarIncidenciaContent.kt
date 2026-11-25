@@ -26,15 +26,17 @@ fun ReportarIncidenciaContent(
     onVolver: () -> Unit,
     onRegistrar: (Int, Int?, TipoIncidencia, String) -> Unit,
     procesando: Boolean = false,
-    error: String? = null
+    error: String? = null,
+
+    equipoInicial: Equipo? = null
 ) {
 
-    var idAmbiente by remember {
-        mutableStateOf<Int?>(null)
+    var idAmbiente by remember(equipoInicial) {
+        mutableStateOf<Int?>(equipoInicial?.idAmbiente)
     }
 
-    var idEquipo by remember {
-        mutableStateOf<Int?>(null)
+    var idEquipo by remember(equipoInicial) {
+        mutableStateOf<Int?>(equipoInicial?.idEquipo)
     }
 
     var tipoSeleccionado by remember {

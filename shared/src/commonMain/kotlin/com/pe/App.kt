@@ -89,6 +89,9 @@ fun App(
         var idIncidenciaDetalle by remember {
             mutableStateOf<Int?>(null)
         }
+        var equipoIncidenciaInicial by remember {
+            mutableStateOf<Equipo?>(null)
+        }
         var idsSeleccionados by remember { mutableStateOf<Set<Int>>(emptySet()) }
         var aviso by remember { mutableStateOf<String?>(null) }
         var mostrarFichaQr by remember {
@@ -124,7 +127,7 @@ fun App(
 
         fun cargarListas() {
             val u = usuario ?: return
-            equipoViewModel.load()
+            equipoViewModel.load(u)
             if (u.esEncargado) {
                 solicitudViewModel.loadManager(u)
                 prestamoViewModel.loadManager(u)
@@ -384,6 +387,7 @@ fun App(
                                             },
 
                                             onReportarIncidencia = {
+                                                equipoIncidenciaInicial = null
                                                 incidenciaViewModel.clearError()
                                                 incidenciaViewModel.clearSuccess()
 
@@ -464,7 +468,12 @@ fun App(
                                         abrirFormulario(setOf(equipo.idEquipo))
                                     }
                                 },
-                                onReportIncident = { aviso = "Incidencias se integrará próximamente." }
+                                onReportIncident = {
+                                    equipoIncidenciaInicial = equipo
+                                    incidenciaViewModel.clearError()
+                                    incidenciaViewModel.clearSuccess()
+                                    pantalla = Screen.ReportarIncidencia
+                                }
                             )
                         }
                     }
@@ -678,18 +687,34 @@ fun App(
                     Screen.ReportarIncidencia -> {
                         val u = usuario
 
-                        if (u != null && !u.esEncargado) {
-                            ReportarIncidenciaContent(
-                                ambientes = equipoState.equipos
-                                    .distinctBy { it.idAmbiente }
-                                    .map {
-                                        OpcionAmbiente(
-                                            it.idAmbiente,
-                                            it.nombreAmbiente
-                                        )
-                                    },
 
-                                equipos = equipoState.equipos,
+                        if (u != null) {
+                            ReportarIncidenciaContent(
+                                ambientes = if (u.esEncargado) {
+                                    listOfNotNull(
+                                        u.idAmbiente?.let {
+                                            OpcionAmbiente(
+                                                it,
+                                                u.nombreAmbiente ?: "Laboratorio asignado"
+                                            )
+                                        }
+                                    )
+                                } else {
+                                    equipoState.equipos
+                                        .distinctBy { it.idAmbiente }
+                                        .map {
+                                            OpcionAmbiente(
+                                                it.idAmbiente,
+                                                it.nombreAmbiente
+                                            )
+                                        }
+                                },
+
+                                equipoInicial = equipoIncidenciaInicial,
+                                equipos = equipoState.equipos.filter {
+                                    !u.esEncargado || it.idAmbiente == u.idAmbiente
+                                },
+
                                 procesando = incidenciaState.processing,
                                 error = incidenciaState.errorMessage,
 
@@ -721,7 +746,7 @@ fun App(
                                 TextButton(
                                     onClick = { pantalla = Screen.Home }
                                 ) {
-                                    Text("Formulario disponible para estudiantes. Volver")
+                                    Text("Debes iniciar sesión. Volver")
                                 }
                             }
                         }

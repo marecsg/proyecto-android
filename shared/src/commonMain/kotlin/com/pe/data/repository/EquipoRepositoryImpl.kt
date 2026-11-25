@@ -87,4 +87,27 @@ class EquipoRepositoryImpl(
             Result.failure(e)
         }
     }
+
+    override suspend fun obtenerEquiposPorAmbiente(
+        idAmbiente: Int
+    ): Result<List<Equipo>> {
+        return try {
+            val response = client.get(
+                "$baseUrl/api/equipos/ambiente/$idAmbiente"
+            ) {
+                contentType(ContentType.Application.Json)
+                header(
+                    HttpHeaders.Authorization,
+                    "Bearer ${obtenerToken()}"
+                )
+            }
+
+            val equipoDtos = response.body<List<EquipoDto>>()
+
+            Result.success(equipoDtos.map { it.toDomain() })
+
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

@@ -385,15 +385,13 @@ fun IncidenciasContent(
                 }
             }
 
-            if (!esEncargado) {
-                Button(
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(16.dp),
-                    onClick = onReportarIncidencia
-                ) {
-                    Text("+ Reportar incidencia")
-                }
+            Button(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(16.dp),
+                onClick = onReportarIncidencia
+            ) {
+                Text("+ Reportar incidencia")
             }
         }
     }

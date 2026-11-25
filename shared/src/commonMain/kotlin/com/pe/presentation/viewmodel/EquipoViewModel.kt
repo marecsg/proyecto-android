@@ -3,8 +3,10 @@ package com.pe.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pe.domain.model.Equipo
+import com.pe.domain.model.Usuario
 import com.pe.domain.usecase.Equipos.ObtenerEquipoPorIdUseCase
 import com.pe.domain.usecase.Equipos.ObtenerEquipoPorQrUseCase
+import com.pe.domain.usecase.Equipos.ObtenerEquiposAmbienteUseCase
 import com.pe.domain.usecase.Equipos.ObtenerEquiposUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,25 +24,62 @@ data class EquipoUiState(
 class EquipoViewModel(
     private val obtenerEquipos: ObtenerEquiposUseCase,
     private val obtenerEquipoPorId: ObtenerEquipoPorIdUseCase,
-    private val obtenerEquipoPorQr: ObtenerEquipoPorQrUseCase
+    private val obtenerEquipoPorQr: ObtenerEquipoPorQrUseCase,
+    private val obtenerEquiposAmbiente: ObtenerEquiposAmbienteUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EquipoUiState())
     val uiState: StateFlow<EquipoUiState> = _uiState.asStateFlow()
 
-    fun load() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(loading = true, errorMessage = null) }
+    fun load(usuario: Usuario) {
 
-            obtenerEquipos()
+        viewModelScope.launch {
+
+            _uiState.update {
+                it.copy(
+                    loading = true,
+                    equipos = emptyList(),
+                    errorMessage = null
+                )
+            }
+
+            val resultado = if (usuario.esEncargado) {
+
+                val idAmbiente = usuario.idAmbiente
+
+                if (idAmbiente == null) {
+                    _uiState.update {
+                        it.copy(
+                            loading = false,
+                            errorMessage = "No tienes un laboratorio asignado"
+                        )
+                    }
+                    return@launch
+                }
+
+                obtenerEquiposAmbiente(idAmbiente)
+
+            } else {
+
+                obtenerEquipos()
+            }
+
+            resultado
                 .onSuccess { listaEquipos ->
-                    _uiState.update { it.copy(equipos = listaEquipos, loading = false) }
+                    _uiState.update {
+                        it.copy(
+                            equipos = listaEquipos,
+                            loading = false
+                        )
+                    }
                 }
                 .onFailure { ex ->
                     _uiState.update {
                         it.copy(
+                            equipos = emptyList(),
                             loading = false,
-                            errorMessage = ex.message ?: "Error al cargar equipos"
+                            errorMessage = ex.message
+                                ?: "Error al cargar equipos"
                         )
                     }
                 }

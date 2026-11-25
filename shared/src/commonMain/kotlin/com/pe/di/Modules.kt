@@ -8,6 +8,7 @@ import com.pe.domain.repository.*
 import com.pe.domain.usecase.Auth.LoginUseCase
 import com.pe.domain.usecase.Equipos.ObtenerEquipoPorIdUseCase
 import com.pe.domain.usecase.Equipos.ObtenerEquipoPorQrUseCase
+import com.pe.domain.usecase.Equipos.ObtenerEquiposAmbienteUseCase
 import com.pe.domain.usecase.Equipos.ObtenerEquiposUseCase
 
 import com.pe.domain.usecase.Prestamo.*
@@ -63,6 +64,7 @@ val appModule = module {
     factory { ObtenerEquiposUseCase(get()) }
     factory { ObtenerEquipoPorIdUseCase(get()) }
     factory { ObtenerEquipoPorQrUseCase(get()) }
+    factory { ObtenerEquiposAmbienteUseCase(get()) }
 
     // USE CASES - PRÉSTAMOS
     factory { ObtenerPrestamosEstudianteUseCase(get()) }
@@ -83,13 +85,14 @@ val appModule = module {
     factory { ObtenerHistorialEstudianteUseCase(get()) }
     factory { ObtenerHistorialEncargadoUseCase(get()) }
 
+
     // VIEWMODELS
     viewModel {
         AuthViewModel(get(), get(), get(), get())
     }
 
     viewModel {
-        EquipoViewModel(get(), get(), get())
+        EquipoViewModel(get(), get(), get(), get())
     }
 
     viewModel {

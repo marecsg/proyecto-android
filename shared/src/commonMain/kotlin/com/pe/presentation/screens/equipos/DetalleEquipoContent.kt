@@ -66,6 +66,8 @@ fun DetalleEquipoContent(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+
+                if (!esEncargado) {
                 Button(
                     onClick = onRequestLoan,
                     enabled = equipo.estaDisponible,
@@ -82,6 +84,7 @@ fun DetalleEquipoContent(
                     Spacer(Modifier.width(8.dp))
 
                     Text("Solicitar préstamo")
+                 }
                 }
 
                 OutlinedButton(
